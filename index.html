@@ -4,16 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nokia Link Tracker</title>
-
-<!-- PWA Meta Tags -->
-<meta name="description" content="نظام تتبع اللينكات - Nokia">
-<meta name="theme-color" content="#005AFF">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Nokia Tracker">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.svg">
-
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -2226,10 +2216,12 @@ function App(){
   }
   const [activePage,setActivePage]=useState('dashboard');
   const [toast,setToast]=useState({msg:'',type:'ok'});
-  const [webhookUrl,setWebhookUrl]=usePersistedState('webhookUrl','https://nokiaonetime-bot.onrender.com/webhook');
+  const [webhookUrl,setWebhookUrl]=usePersistedState('webhookUrl','');
   const [tgIds,setTgIds]=usePersistedState('tgIds',{});
   const [tgMembers,setTgMembers]=usePersistedState('tgMembers',{});
   const [sheetId,setSheetId]=usePersistedState('sheetId','');
+  const [activityWebhookUrl,setActivityWebhookUrl]=usePersistedState('activityWebhookUrl','');
+  const [activityFetchUrl,setActivityFetchUrl]=usePersistedState('activityFetchUrl','');
 
   function showToast(msg,type='ok'){setToast({msg,type});setTimeout(()=>setToast({msg:'',type:'ok'}),3500);}
   function logout(){
@@ -2246,40 +2238,6 @@ function App(){
     setActivePage('dashboard');
   }
 
-  // ✅ Auto-Test Backend Connection with Retry
-  function testBackendConnection(url, retryCount){
-    if(!url || retryCount >= 3){
-      if(retryCount >= 3) showToast('❌ فشل الاتصال بالـ Backend بعد 3 محاولات','err');
-      return;
-    }
-    
-    const attempt = retryCount + 1;
-    showToast('🔄 جاري الاتصال بالـ Backend... (محاولة '+attempt+'/3)');
-    
-    fetch(url.replace(/\/webhook\/?$/,'/health'))
-      .then(function(r){return r.json();})
-      .then(function(data){
-        if(data.ok && data.pyrogram){
-          showToast('✅ الاتصال بالـ Backend ناجح - تيليجرام متصل');
-          console.log('✅ Backend connected - Telegram ready');
-        }else if(data.ok){
-          showToast('⚠️ Backend متصل لكن تيليجرام غير متصل','err');
-          console.warn('⚠️ Backend OK but Telegram disconnected');
-        }
-      })
-      .catch(function(e){
-        console.error('❌ Backend connection attempt '+attempt+' failed:',e);
-        if(retryCount < 2){
-          // Retry after 3 seconds
-          setTimeout(function(){
-            testBackendConnection(url, retryCount+1);
-          }, 3000);
-        }else{
-          showToast('❌ فشل الاتصال بالـ Backend بعد 3 محاولات','err');
-        }
-      });
-  }
-
   if(!currentUser) return <LoginPage users={users} onLogin={function(u){
     setCurrentUser(u);
     showToast('مرحباً '+u.name+'! 👋');
@@ -2290,13 +2248,6 @@ function App(){
       action:'تسجيل دخول',details:'دخل النظام'
     };
     setActivityLog(function(prev){return [entry].concat(prev);});
-    
-    // ✅ Auto-connect to Backend after login
-    if(webhookUrl){
-      setTimeout(function(){
-        testBackendConnection(webhookUrl, 0);
-      }, 1500);
-    }
   }}/>;
 
   const navItems=[
@@ -2346,41 +2297,6 @@ function App(){
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-
-// ✅ Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log('✅ PWA Service Worker registered'))
-      .catch(err => console.log('⚠️ Service Worker registration failed:', err));
-  });
-}
-
-// ✅ Keep-Alive: Ping Backend every 10 minutes to prevent Render sleep
-const BACKEND_URL = 'https://nokiaonetime-bot.onrender.com';
-const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
-
-function pingBackend() {
-  fetch(BACKEND_URL + '/health')
-    .then(res => res.json())
-    .then(data => {
-      if (data.ok && data.pyrogram) {
-        console.log('🟢 Backend alive - Telegram connected');
-      } else if (data.ok) {
-        console.warn('🟡 Backend alive - Telegram disconnected');
-      }
-    })
-    .catch(err => {
-      console.error('🔴 Backend unreachable:', err.message);
-    });
-}
-
-// Start Keep-Alive on page load
-window.addEventListener('load', () => {
-  pingBackend(); // First ping immediately
-  setInterval(pingBackend, PING_INTERVAL); // Then every 10 min
-  console.log('✅ Keep-Alive started: Backend pings every 10 minutes');
-});
 </script>
 </body>
 </html>

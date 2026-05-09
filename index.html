@@ -746,8 +746,14 @@ function DashboardPage({data,setData,currentUser,users,companies,areas,scopes:sc
     setEditUploading(true);setEditUploadProgress(0);setEditUploadSteps([]);setEditUploadDone(false);
     const steps=[
       {t:'تجهيز الصور الجديدة...'},
-      {t:`إرسال الصور لتيليجرام...`},
-      {t:`اكتمل! وصلت لجروب ${editForm.linkId} ✅`},
+      {t:'رفع الصور على Google Drive مؤقتاً...'},
+      {t:'Make.com استلم الصور...'},
+      pCount.before>0&&{t:`إرسال صور "قبل التركيب" (${pCount.before}) كاستكمال...`},
+      pCount.after>0&&{t:`إرسال صور "بعد التركيب" (${pCount.after}) كاستكمال...`},
+      pCount.serial>0&&{t:`إرسال صور "السيريال" (${pCount.serial}) كاستكمال...`},
+      pCount.general>0&&{t:`إرسال صور "عامة" (${pCount.general}) كاستكمال...`},
+      {t:'حذف الصور من Google Drive تلقائياً...'},
+      {t:`اكتمل! وصلت لجروب ${editForm.linkId} كاستكمال ✅`},
     ].filter(Boolean);
     for(let i=0;i<steps.length;i++){
       await new Promise(r=>setTimeout(r,500));
@@ -1542,14 +1548,39 @@ function ScopesPage({data,companies,users,scopes:scopesProp}){
 
 
 
-function ActivityLogPage({activityLog,setActivityLog,users,showToast}){
+function ActivityLogPage({activityLog,setActivityLog,users,activityFetchUrl,showToast}){
   var [loading,setLoading]=useState(false);
   
   function fetchFromSheet(){
-    showToast('⚠️ Google Sheets Sync قريباً مع Apps Script','err');
-  function fetchFromSheet(){
-    showToast('⚠️ Google Sheets Sync قريباً مع Apps Script','err');
-    // TODO: Sync from Google Sheets via Apps Script
+    if(!activityFetchUrl){
+      showToast('أضف رابط الـ Webhook في الإعدادات أولاً','err');
+      return;
+    }
+    setLoading(true);
+    fetch(activityFetchUrl).then(function(r){return r.json();}).then(function(rows){
+      if(!Array.isArray(rows)){
+        showToast('البيانات غير صحيحة','err');
+        setLoading(false);
+        return;
+      }
+      var entries=rows.map(function(r,i){
+        return {
+          id:'sheet_'+i+'_'+Date.now(),
+          time:(r.date||'')+(r.time?' '+r.time:''),
+          user:r.user||'-',
+          userId:r.userId||0,
+          role:r.role||'-',
+          action:r.action||'-',
+          details:r.details||''
+        };
+      });
+      setActivityLog(entries);
+      showToast('✓ تم تحميل '+entries.length+' نشاط من Google Sheet');
+      setLoading(false);
+    }).catch(function(e){
+      showToast('فشل التحميل: '+e.message,'err');
+      setLoading(false);
+    });
   }
   
   var [filterUser,setFilterUser]=useState('all');
@@ -1779,7 +1810,7 @@ function TgCompMembers({company,members,setTgMembers}){
   );
 }
 
-function SettingsPage({companies,setCompanies,areas,setAreas,scopes,setScopes,data,showToast,logActivity,webhookUrl,setWebhookUrl,tgIds,setTgIds,tgMembers,setTgMembers,sheetId,setSheetId}){
+function SettingsPage({companies,setCompanies,areas,setAreas,scopes,setScopes,data,showToast,logActivity,webhookUrl,setWebhookUrl,tgIds,setTgIds,tgMembers,setTgMembers,sheetId,setSheetId,activityWebhookUrl,setActivityWebhookUrl,activityFetchUrl,setActivityFetchUrl}){
   const [connSt,setConnSt]=useState('idle');
   const [sendLog,setSendLog]=useState([]);
   const [showCompModal,setShowCompModal]=useState(false);
@@ -1843,7 +1874,7 @@ function SettingsPage({companies,setCompanies,areas,setAreas,scopes,setScopes,da
 
   return(<>
     <div className="page-header">
-      <div className="page-header-left"><h1>الإعدادات</h1><p>إدارة الشركات والربط مع تيليجرام</p></div>
+      <div className="page-header-left"><h1>الإعدادات</h1><p>إدارة الشركات والربط مع Make.com وتيليجرام</p></div>
     </div>
 
     {/* COMPANIES SECTION */}
@@ -1995,24 +2026,64 @@ function SettingsPage({companies,setCompanies,areas,setAreas,scopes,setScopes,da
       </div>
     </div>
 
-    {/* BACKEND WEBHOOK */}
+    {/* WEBHOOK */}
     <div className="setup-card">
       <div className="setup-header">
         <div className={'setup-num '+(webhookUrl?'done':'')}>{ webhookUrl?'✓':'1'}</div>
-        <span className="setup-title">Backend Webhook للتيليجرام</span>
+        <span className="setup-title">Make.com Webhook</span>
         <span style={{fontSize:10,color:webhookUrl?'#22c55e':'#94a3b8'}}>{webhookUrl?'متصل':'لم يضبط'}</span>
       </div>
       <div className="setup-body">
-        <div style={{fontSize:11,color:'var(--text2)',marginBottom:8}}>
-          رابط الـ Backend (Python/Render) اللي بيبعت اللينكات والصور لتيليجرام:
+        <div className="make-steps">
+          {[['Webhooks → Custom Webhook','استقبال البيانات والصور'],['Google Drive → Upload a File','رفع الصور مؤقتاً'],['Telegram Bot → Send a Photo','إرسال الصور لجروب اللينك'],['Google Drive → Delete a File','مسح الصور من Drive تلقائياً'],['Google Sheets → Add a Row','حفظ البيانات في الشيت']].map(([t,d],i)=>
+            <div className="make-step" key={i}><div className="ms-num">{i+1}</div><div className="ms-body"><strong>{t}</strong><br/>{d}</div></div>
+          )}
         </div>
-        <div className="field-row">
-          <input placeholder="https://your-backend.onrender.com/webhook" value={webhookUrl} onChange={e=>setWebhookUrl(e.target.value)} className={webhookUrl?'ok':''}/>
+        <div className="field-row" style={{marginTop:14}}>
+          <input placeholder="https://hook.eu1.make.com/xxxxxxxxxxxxxxxx" value={webhookUrl} onChange={e=>setWebhookUrl(e.target.value)} className={webhookUrl?'ok':''}/>
           <button className="btn btn-blue" onClick={testConn} style={{whiteSpace:'nowrap'}}>{connSt==='testing'?'...':'اختبار'}</button>
         </div>
         {connSt!=='idle'&&<div className={'conn-status '+(connSt==='ok'?'conn-ok':'conn-fail')}>
           <div className="dot"/>{connSt==='ok'?'الاتصال ناجح!':connSt==='fail'?'فشل — تحقق من الـ URL':'جاري...'}
         </div>}
+      </div>
+    </div>
+
+    {/* ACTIVITY LOG WEBHOOK */}
+    <div className="setup-card">
+      <div className="setup-header">
+        <div className={'setup-num '+(activityWebhookUrl?'done':'')} style={{background:activityWebhookUrl?'var(--green)':'#9333ea'}}>{activityWebhookUrl?'✓':'📋'}</div>
+        <span className="setup-title">Webhook لسجل النشاطات</span>
+      </div>
+      <div className="setup-body">
+        <div style={{fontSize:11,color:'var(--text2)',marginBottom:8,lineHeight:1.7}}>
+          هذا الـ Webhook لإرسال <strong>سجل النشاطات</strong> لـ Google Sheet عبر Make.com تلقائياً (مختلف عن webhook اللينكات).
+        </div>
+        <div className="field-row">
+          <input type="url" placeholder="https://hook.eu1.make.com/..." value={activityWebhookUrl} onChange={function(e){setActivityWebhookUrl(e.target.value);}} className={activityWebhookUrl?'ok':''}/>
+        </div>
+        <div className="info-box">
+          <strong>إعداد Make.com:</strong>
+          <div style={{marginTop:6}}>1. اعمل Scenario جديد فيه <strong>Webhook → Google Sheets (Add a Row)</strong></div>
+          <div>2. الأعمدة في الشيت: <strong>timestamp, date, time, user, username, role, company, action, details</strong></div>
+          <div>3. كل عملية في النظام هتتسجل في الشيت تلقائياً ✅</div>
+        </div>
+
+        <div style={{marginTop:14,paddingTop:12,borderTop:'1px solid var(--border)'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'var(--text2)',marginBottom:8}}>🔄 رابط قراءة السجل من الشيت</div>
+          <div style={{fontSize:10,color:'var(--text2)',marginBottom:6,lineHeight:1.6}}>
+            عشان كل المستخدمين يشوفوا نفس السجل، اعمل Scenario تاني في Make.com يقرأ من الشيت ويرجع JSON.
+          </div>
+          <div className="field-row">
+            <input type="url" placeholder="https://hook.eu1.make.com/..." value={activityFetchUrl} onChange={function(e){setActivityFetchUrl(e.target.value);}} className={activityFetchUrl?'ok':''}/>
+          </div>
+          <div className="info-box" style={{background:'#eff6ff',border:'1px solid #bfdbfe'}}>
+            <strong>إعداد Scenario القراءة:</strong>
+            <div style={{marginTop:6}}>1. Webhook → Google Sheets (<strong>Search Rows</strong>) → Webhook Response</div>
+            <div>2. في Webhook Response: ابعت كل الصفوف كـ JSON Array</div>
+            <div>3. زرار "🔄 تحديث من Google Sheet" في صفحة السجل هيستخدمه</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2118,7 +2189,30 @@ function App(){
       details:details||''
     };
     setActivityLog(function(prev){return [entry].concat(prev);});
-    // TODO: Send to Google Sheets via Apps Script
+    
+    // Send to Google Sheets via Make.com webhook
+    if(activityWebhookUrl){
+      try{
+        fetch(activityWebhookUrl,{
+          method:'POST',
+          mode:'no-cors',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            timestamp:now.toISOString(),
+            date:now.toLocaleDateString('en-GB'),
+            time:now.toLocaleTimeString('en-GB',{hour12:false}),
+            user:currentUser.name,
+            username:currentUser.username,
+            userId:currentUser.id,
+            role:currentUser.role,
+            company:currentUser.company,
+            action:action,
+            details:details||'',
+            userAgent:navigator.userAgent.substring(0,100)
+          })
+        });
+      }catch(e){console.error('Activity log webhook error:',e);}
+    }
   }
   const [activePage,setActivePage]=useState('dashboard');
   const [toast,setToast]=useState({msg:'',type:'ok'});
@@ -2126,6 +2220,8 @@ function App(){
   const [tgIds,setTgIds]=usePersistedState('tgIds',{});
   const [tgMembers,setTgMembers]=usePersistedState('tgMembers',{});
   const [sheetId,setSheetId]=usePersistedState('sheetId','');
+  const [activityWebhookUrl,setActivityWebhookUrl]=usePersistedState('activityWebhookUrl','');
+  const [activityFetchUrl,setActivityFetchUrl]=usePersistedState('activityFetchUrl','');
 
   function showToast(msg,type='ok'){setToast({msg,type});setTimeout(()=>setToast({msg:'',type:'ok'}),3500);}
   function logout(){
@@ -2192,9 +2288,9 @@ function App(){
       <div className="main-content">
         {activePage==='dashboard'&&<DashboardPage data={data} setData={setData} currentUser={currentUser} users={users} companies={companies} areas={areas} scopes={scopes} logActivity={logActivity} webhookUrl={webhookUrl} tgIds={tgIds} tgMembers={tgMembers} sheetId={sheetId} showToast={showToast}/>}
         {activePage==='users'&&currentUser.perms.manageUsers&&<UsersPage users={users} setUsers={setUsers} companies={companies} showToast={showToast} logActivity={logActivity}/>}
-        {activePage==='activity'&&(currentUser.perms.manageUsers||currentUser.perms.edit)&&<ActivityLogPage activityLog={activityLog} setActivityLog={setActivityLog} users={users} showToast={showToast}/>}
+        {activePage==='activity'&&(currentUser.perms.manageUsers||currentUser.perms.edit)&&<ActivityLogPage activityLog={activityLog} setActivityLog={setActivityLog} users={users} activityFetchUrl={activityFetchUrl} showToast={showToast}/>}
         {activePage==='scopes'&&<ScopesPage data={data} companies={companies} users={users} scopes={scopes}/>}
-        {activePage==='settings'&&currentUser.perms.settings&&<SettingsPage companies={companies} setCompanies={setCompanies} areas={areas} setAreas={setAreas} scopes={scopes} setScopes={setScopes} logActivity={logActivity} data={data} showToast={showToast} webhookUrl={webhookUrl} setWebhookUrl={setWebhookUrl} tgIds={tgIds} setTgIds={setTgIds} tgMembers={tgMembers} setTgMembers={setTgMembers} sheetId={sheetId} setSheetId={setSheetId}/>}
+        {activePage==='settings'&&currentUser.perms.settings&&<SettingsPage companies={companies} setCompanies={setCompanies} areas={areas} setAreas={setAreas} scopes={scopes} setScopes={setScopes} logActivity={logActivity} data={data} showToast={showToast} webhookUrl={webhookUrl} setWebhookUrl={setWebhookUrl} tgIds={tgIds} setTgIds={setTgIds} tgMembers={tgMembers} setTgMembers={setTgMembers} sheetId={sheetId} setSheetId={setSheetId} activityWebhookUrl={activityWebhookUrl} setActivityWebhookUrl={setActivityWebhookUrl} activityFetchUrl={activityFetchUrl} setActivityFetchUrl={setActivityFetchUrl}/>}
       </div>
     </div>
   );

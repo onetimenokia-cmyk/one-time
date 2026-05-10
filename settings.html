@@ -432,10 +432,9 @@
 
   function togglePartner(id) {
     const p = PARTNERS.find(x => x.id === id);
-    p.hidden = !p.hidden;
-    renderPartners();
-    showToast(p.hidden ? 'Partner hidden' : 'Partner visible', 'success');
-    // TODO: update Google Sheets
+    const newStatus = p.hidden ? 'Active' : 'Hidden';
+    fetch(API_URL + '?action=updatePartner&id=' + encodeURIComponent(p.id) + '&status=' + newStatus, {method:'GET', redirect:'follow'})
+      .then(() => { fetchAll(); showToast(p.hidden ? 'Partner visible' : 'Partner hidden', 'success'); });
   }
 
   // ── REGIONS ──
@@ -451,9 +450,9 @@
   }
 
   function deleteRegion(i) {
-    REGIONS.splice(i, 1);
-    renderRegions();
-    showToast('Region deleted', 'success');
+    const r = REGIONS[i];
+    fetch(API_URL + '?action=updateRegion&id=' + encodeURIComponent(r.id) + '&status=Hidden', {method:'GET', redirect:'follow'})
+      .then(() => { fetchAll(); showToast('Region hidden', 'success'); });
   }
 
   // ── SCOPES ──
@@ -468,9 +467,9 @@
   }
 
   function deleteScope(i) {
-    SCOPES.splice(i, 1);
-    renderScopes();
-    showToast('Scope deleted', 'success');
+    const s = SCOPES[i];
+    fetch(API_URL + '?action=updateScope&id=' + encodeURIComponent(s.id) + '&status=Hidden', {method:'GET', redirect:'follow'})
+      .then(() => { fetchAll(); showToast('Scope hidden', 'success'); });
   }
 
   // ── ITEM MODAL (region/scope edit) ──
@@ -497,7 +496,6 @@
     }
     closeItemModal();
     showToast('Updated successfully!', 'success');
-    // TODO: update Google Sheets
   }
 
   // ── TOAST ──

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nokia Tracker — Add New Link</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-w: 220px;
+      --blue: #2563eb; --blue-light: #eff6ff;
+      --border: #e5e7eb; --bg: #f0f2f7;
+      --white: #ffffff; --text: #111827;
+      --text-sec: #6b7280; --text-ter: #9ca3af;
+      --red: #dc2626; --green: #059669; --amber: #d97706;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100; transition: transform 0.25s; }
+    .sidebar-brand { padding: 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .brand-logo { width: 34px; height: 34px; border-radius: 8px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .brand-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+    .brand-sub { font-size: 10px; color: var(--text-ter); }
+    .sidebar-user { padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .user-role { font-size: 11px; color: var(--text-ter); }
+    .nav { padding: 8px 0; flex: 1; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; color: var(--text-sec); cursor: pointer; text-decoration: none; transition: background 0.1s, color 0.1s; }
+    .nav-item:hover { background: #f9fafb; color: var(--text); }
+    .nav-item.active { background: var(--blue-light); color: var(--blue); font-weight: 500; }
+    .nav-item i { font-size: 16px; }
+    .nav-divider { height: 1px; background: var(--border); margin: 6px 0; }
+    .nav-sub { padding-left: 32px; font-size: 12px; }
+    .logout { padding: 12px 16px; border-top: 1px solid var(--border); }
+    .logout a { font-size: 12px; color: var(--red); cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+
+    /* MAIN */
+    .main { flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column; min-width: 0; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 50; }
+    .back-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-sec); font-size: 16px; text-decoration: none; }
+    .back-btn:hover { background: #f9fafb; }
+    .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .topbar-sub { font-size: 12px; color: var(--text-ter); }
+
+    /* CONTENT */
+    .content { padding: 20px; flex: 1; }
+    .form-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-width: 860px; margin: 0 auto; }
+
+    .section-title { font-size: 13px; font-weight: 500; color: var(--text-sec); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-full { margin-bottom: 14px; }
+
+    .field label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 5px; font-weight: 500; }
+    .field label span { color: var(--red); }
+    .field input, .field select, .field textarea {
+      width: 100%; height: 36px; border: 1px solid var(--border); border-radius: 8px;
+      padding: 0 12px; font-size: 13px; color: var(--text); background: var(--white);
+      outline: none; font-family: inherit; transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .field textarea { height: 80px; padding: 10px 12px; resize: vertical; }
+
+    /* SITE BLOCK */
+    .site-block { background: #f9fafb; border-radius: 10px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); }
+    .site-block-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .site-id-row { margin-bottom: 12px; }
+    .photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .upload-box {
+      border: 1px dashed var(--border); border-radius: 8px; padding: 14px;
+      text-align: center; cursor: pointer; background: var(--white);
+      transition: border-color 0.15s, background 0.15s; position: relative; overflow: hidden;
+    }
+    .upload-box:hover { border-color: var(--blue); background: var(--blue-light); }
+    .upload-box input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-box i { font-size: 20px; color: var(--text-ter); display: block; margin-bottom: 4px; }
+    .upload-box .upload-label { font-size: 12px; color: var(--text-sec); font-weight: 500; margin-bottom: 6px; }
+    .upload-box .upload-hint { font-size: 11px; color: var(--text-ter); }
+    .upload-box.has-file { border-color: var(--green); background: #f0fdf4; }
+    .upload-box.has-file i { color: var(--green); }
+
+    /* DOCUMENT */
+    .doc-upload { border: 1px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; background: var(--white); margin-bottom: 16px; transition: border-color 0.15s; position: relative; overflow: hidden; }
+    .doc-upload:hover { border-color: var(--blue); }
+    .doc-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .doc-upload i { font-size: 24px; color: var(--text-ter); display: block; margin-bottom: 6px; }
+    .doc-upload p { font-size: 12px; color: var(--text-ter); }
+    .doc-upload .formats { font-size: 11px; color: var(--text-ter); margin-top: 4px; }
+
+    /* BUTTONS */
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: inherit; transition: background 0.1s; }
+    .btn:hover { background: #f9fafb; }
+    .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-telegram { background: #0088cc; color: #fff; border-color: #0088cc; }
+    .btn-telegram:hover { background: #0077b5; }
+    .btn-cancel { color: var(--text-sec); }
+
+    .required-note { font-size: 11px; color: var(--text-ter); margin-bottom: 16px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; display: none; align-items: center; gap: 8px; z-index: 999; }
+    .toast.show { display: flex; }
+    .toast.success { background: #059669; }
+    .toast.error { background: var(--red); }
+
+    /* MOBILE */
+    .menu-btn { display: none; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 99; }
+    .overlay.show { display: block; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .form-grid { grid-template-columns: 1fr; }
+      .photos-grid { grid-template-columns: 1fr; }
+      .menu-btn { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--white); cursor: pointer; font-size: 18px; color: var(--text-sec); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">NT</div>
+      <div>
+        <div class="brand-name">Nokia Tracker</div>
+        <div class="brand-sub">One Time</div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">KB</div>
+      <div>
+        <div class="user-name" id="sidebarName">Karim BooKa</div>
+        <div class="user-role" id="sidebarRole">Admin</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-item" href="dashboard.html"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a class="nav-item active" href="add-link.html"><i class="ti ti-plus"></i> Add New Link</a>
+      <a class="nav-item" href="scopes.html"><i class="ti ti-topology-star"></i> Scopes</a>
+      <a class="nav-item" href="activity-log.html"><i class="ti ti-clipboard-list"></i> Activity Log</a>
+      <a class="nav-item" href="tracking.html"><i class="ti ti-hard-hat"></i> Tracking Engineers</a>
+      <a class="nav-item" href="users.html"><i class="ti ti-users"></i> Users Management</a>
+      <div class="nav-divider"></div>
+      <a class="nav-item" href="settings.html"><i class="ti ti-settings"></i> Settings</a>
+      <a class="nav-item nav-sub" href="settings.html#partners"><i class="ti ti-users-group"></i> Partners</a>
+      <a class="nav-item nav-sub" href="settings.html#regions"><i class="ti ti-map-pin"></i> Regions</a>
+      <a class="nav-item nav-sub" href="settings.html#scopes"><i class="ti ti-topology-star"></i> Scopes</a>
+      <div class="nav-divider"></div>
+      <a class="nav-item" href="settings-system.html"><i class="ti ti-settings-2"></i> Settings System</a>
+      <a class="nav-item nav-sub" href="settings-system.html#telegram"><i class="ti ti-brand-telegram"></i> Telegram</a>
+      <a class="nav-item nav-sub" href="settings-system.html#google"><i class="ti ti-brand-google"></i> Google</a>
+    </nav>
+    <div class="logout">
+      <a onclick="logout()"><i class="ti ti-logout"></i> Sign Out</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <a class="back-btn" href="dashboard.html"><i class="ti ti-arrow-left"></i></a>
+      <div>
+        <div class="topbar-title">Add New Link</div>
+        <div class="topbar-sub">Fill in the link details below</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="form-card">
+        <p class="required-note"><span style="color:var(--red);">*</span> Required fields</p>
+
+        <!-- BASIC INFO -->
+        <div class="section-title"><i class="ti ti-info-circle"></i> Basic Information</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Link ID <span>*</span></label>
+            <input type="text" id="linkId" placeholder="e.g. N3816-N4517" />
+          </div>
+          <div class="field">
+            <label>Link Configuration <span>*</span></label>
+            <input type="text" id="linkConfig" placeholder="e.g. 350 Mbps 0.3m MPT-HQAM" />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Partner <span>*</span></label>
+            <select id="partner">
+              <option value="">-- Select --</option>
+              <option>NJV</option>
+              <option>CTC</option>
+              <option>AWTG</option>
+              <option>AMC</option>
+              <option>Al-habdan</option>
+              <option>Nu-Era</option>
+              <option>MEL</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Scope <span>*</span></label>
+            <select id="scope">
+              <option value="">-- Select --</option>
+              <option>WBB - Nokia Expansion</option>
+              <option>WBB - Huawei Swap</option>
+              <option>WBB - New Site</option>
+              <option>WBB - Nokia MW</option>
+              <option>WBB - Huawei MW</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Region <span>*</span></label>
+            <select id="region">
+              <option value="">-- Select --</option>
+              <option>Qassim</option>
+              <option>Hail</option>
+              <option>Tabuk</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status <span>*</span></label>
+            <select id="status">
+              <option value="Pending">Pending</option>
+              <option value="Done">Done</option>
+              <option value="Not Confirmed">Not Confirmed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Site Engineer</label>
+            <select id="engineer">
+              <option value="">-- Select --</option>
+              <option>Karim BooKa</option>
+              <option>Helal</option>
+              <option>Mohammed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Migration</label>
+            <select id="migration">
+              <option value="">-- Select --</option>
+              <option>Done</option>
+              <option>Not Confirmed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-full field">
+          <label>Notes</label>
+          <textarea id="notes" placeholder="Add any notes or remarks..."></textarea>
+        </div>
+
+        <!-- NR SITE -->
+        <div class="section-title"><i class="ti ti-antenna"></i> NR Site</div>
+        <div class="site-block">
+          <div class="site-id-row field">
+            <label>NR Site ID <span>*</span></label>
+            <input type="text" id="nrSiteId" placeholder="e.g. N3816" style="max-width:300px;" />
+          </div>
+          <div class="photos-grid">
+            <div class="upload-box" id="nrBefore">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'nrBefore')" />
+              <div class="upload-label">Before Installation</div>
+              <i class="ti ti-camera"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+            <div class="upload-box" id="nrAfter">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'nrAfter')" />
+              <div class="upload-label">After Installation</div>
+              <i class="ti ti-camera"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+            <div class="upload-box" id="nrGeneral">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'nrGeneral')" />
+              <div class="upload-label">General Photo</div>
+              <i class="ti ti-photo"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+            <div class="upload-box" id="nrSerial">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'nrSerial')" />
+              <div class="upload-label">Serial Number</div>
+              <i class="ti ti-barcode"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FE SITE -->
+        <div class="section-title"><i class="ti ti-antenna"></i> FE Site</div>
+        <div class="site-block">
+          <div class="site-id-row field">
+            <label>FE Site ID <span>*</span></label>
+            <input type="text" id="feSiteId" placeholder="e.g. N4517" style="max-width:300px;" />
+          </div>
+          <div class="photos-grid">
+            <div class="upload-box" id="feBefore">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'feBefore')" />
+              <div class="upload-label">Before Installation</div>
+              <i class="ti ti-camera"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+            <div class="upload-box" id="feAfter">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'feAfter')" />
+              <div class="upload-label">After Installation</div>
+              <i class="ti ti-camera"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+            <div class="upload-box" id="feGeneral">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'feGeneral')" />
+              <div class="upload-label">General Photo</div>
+              <i class="ti ti-photo"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+            <div class="upload-box" id="feSerial">
+              <input type="file" accept="image/*" onchange="handlePhoto(this,'feSerial')" />
+              <div class="upload-label">Serial Number</div>
+              <i class="ti ti-barcode"></i>
+              <div class="upload-hint">Click to upload photo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOCUMENT -->
+        <div class="section-title"><i class="ti ti-file"></i> Document</div>
+        <div class="doc-upload" id="docUpload">
+          <input type="file" accept=".xlsx,.xls,.doc,.docx,.pdf" onchange="handleDoc(this)" />
+          <i class="ti ti-cloud-upload"></i>
+          <p>Click or drag to upload document</p>
+          <p class="formats">Supports: Excel / Word / PDF</p>
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="btn-row">
+          <a href="dashboard.html" class="btn btn-cancel"><i class="ti ti-x"></i> Cancel</a>
+          <button class="btn btn-telegram" onclick="saveAndSend()"><i class="ti ti-brand-telegram"></i> Save & Send to Telegram</button>
+          <button class="btn btn-primary" onclick="saveLink()"><i class="ti ti-device-floppy"></i> Save Link</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // AUTH
+  const user = JSON.parse(sessionStorage.getItem('nt_user') || 'null');
+  if (!user) window.location.href = 'index.html';
+  if (user) {
+    const initials = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sidebarAvatar').textContent = initials;
+    document.getElementById('sidebarName').textContent   = user.name;
+    document.getElementById('sidebarRole').textContent   = user.role.replace('_',' ');
+  }
+
+  // LOAD DROPDOWNS FROM SHEETS
+  async function loadDropdowns() {
+    try {
+      const [pRes, rRes, sRes, uRes] = await Promise.all([
+        fetch(API_URL + '?action=getPartners', { method:'GET', redirect:'follow' }),
+        fetch(API_URL + '?action=getRegions',  { method:'GET', redirect:'follow' }),
+        fetch(API_URL + '?action=getScopes',   { method:'GET', redirect:'follow' }),
+        fetch(API_URL + '?action=getUsers',    { method:'GET', redirect:'follow' }),
+      ]);
+      const partners = await pRes.json();
+      const regions  = await rRes.json();
+      const scopes   = await sRes.json();
+      const users    = await uRes.json();
+
+      const pSel = document.getElementById('partner');
+      const rSel = document.getElementById('region');
+      const sSel = document.getElementById('scope');
+      const eSel = document.getElementById('engineer');
+
+      pSel.innerHTML = '<option value="">-- Select --</option>';
+      rSel.innerHTML = '<option value="">-- Select --</option>';
+      sSel.innerHTML = '<option value="">-- Select --</option>';
+      eSel.innerHTML = '<option value="">-- Select --</option>';
+
+      if (Array.isArray(partners)) partners.filter(p=>p['Status']==='Active').forEach(p => {
+        pSel.innerHTML += `<option>${p['Partner Name']}</option>`;
+      });
+      if (Array.isArray(regions)) regions.filter(r=>r['Status']==='Active').forEach(r => {
+        rSel.innerHTML += `<option>${r['Region Name']}</option>`;
+      });
+      if (Array.isArray(scopes)) scopes.filter(s=>s['Status']==='Active').forEach(s => {
+        sSel.innerHTML += `<option>${s['Scope Name']}</option>`;
+      });
+      if (Array.isArray(users)) users.filter(u=>u['Status']==='Active').forEach(u => {
+        eSel.innerHTML += `<option>${u['Name']}</option>`;
+      });
+    } catch(err) {
+      console.log('Could not load dropdowns:', err);
+    }
+  }
+
+  loadDropdowns();
+
+  // PHOTO UPLOAD
+  const uploadedFiles = {};
+  function handlePhoto(input, id) {
+    if (input.files[0]) {
+      uploadedFiles[id] = input.files[0];
+      const box = document.getElementById(id);
+      box.classList.add('has-file');
+      box.querySelector('i').className = 'ti ti-check';
+      box.querySelector('.upload-hint').textContent = input.files[0].name;
+    }
+  }
+
+  // DOCUMENT UPLOAD
+  let uploadedDoc = null;
+  function handleDoc(input) {
+    if (input.files[0]) {
+      uploadedDoc = input.files[0];
+      const box = document.getElementById('docUpload');
+      box.querySelector('i').className = 'ti ti-file-check';
+      box.querySelector('p').textContent = input.files[0].name;
+      box.style.borderColor = '#059669';
+    }
+  }
+
+  // VALIDATE
+  function validate() {
+    const required = ['linkId','linkConfig','partner','scope','region','nrSiteId','feSiteId'];
+    for (const id of required) {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) {
+        el.style.borderColor = '#dc2626';
+        el.focus();
+        showToast('Please fill all required fields', 'error');
+        setTimeout(() => { el.style.borderColor = ''; }, 2000);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // COLLECT DATA
+  function collectData() {
+    return {
+      linkId:    document.getElementById('linkId').value.trim(),
+      config:    document.getElementById('linkConfig').value.trim(),
+      partner:   document.getElementById('partner').value,
+      scope:     document.getElementById('scope').value,
+      region:    document.getElementById('region').value,
+      status:    document.getElementById('status').value,
+      engineer:  document.getElementById('engineer').value,
+      migration: document.getElementById('migration').value,
+      notes:     document.getElementById('notes').value.trim(),
+      nrSiteId:  document.getElementById('nrSiteId').value.trim(),
+      feSiteId:  document.getElementById('feSiteId').value.trim(),
+      date:      new Date().toLocaleDateString('en-CA'),
+      addedBy:   user.name,
+    };
+  }
+
+  // API URL
+  const API_URL = 'https://script.google.com/macros/s/AKfycby22dbffs2Wb7EandrNisGk2uZlI094fdqKca3m0miEaWjGpbQWaodY_8I1aGgJAnmw/exec';
+
+  // SAVE
+  async function saveLink() {
+    if (!validate()) return;
+    const data = collectData();
+    showToast('Saving to Google Sheets...', '');
+    try {
+      const params = new URLSearchParams({
+        action: 'addLink',
+        siteName:  data.linkId,
+        nrSiteId:  data.nrSiteId,
+        feSiteId:  data.feSiteId,
+        partner:   data.partner,
+        region:    data.region,
+        scope:     data.scope,
+        status:    data.status,
+        engineer:  data.engineer,
+        photos:    Object.keys(uploadedFiles).join(','),
+        document:  uploadedDoc ? uploadedDoc.name : '',
+        telegramGroup: ''
+      });
+      const res = await fetch(API_URL + '?' + params.toString(), { method: 'GET', redirect: 'follow' });
+      const result = await res.json();
+      if (result.success) {
+        // Log activity
+        await fetch(API_URL + '?action=addActivityLog&user=' + encodeURIComponent(user.name) + '&action2=Add Link&details=' + encodeURIComponent(data.linkId), { method: 'GET', redirect: 'follow' });
+        showToast('Link saved successfully!', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 1500);
+      } else {
+        showToast('Error: ' + (result.error || 'Unknown error'), 'error');
+      }
+    } catch (err) {
+      showToast('Connection error. Please try again.', 'error');
+    }
+  }
+
+  // SAVE & SEND TO TELEGRAM
+  async function saveAndSend() {
+    if (!validate()) return;
+    const data = collectData();
+    showToast('Saving & sending to Telegram...', '');
+    try {
+      const params = new URLSearchParams({
+        action: 'addLink',
+        siteName:  data.linkId,
+        nrSiteId:  data.nrSiteId,
+        feSiteId:  data.feSiteId,
+        partner:   data.partner,
+        region:    data.region,
+        scope:     data.scope,
+        status:    data.status,
+        engineer:  data.engineer,
+        photos:    Object.keys(uploadedFiles).join(','),
+        document:  uploadedDoc ? uploadedDoc.name : '',
+        telegramGroup: ''
+      });
+      const res = await fetch(API_URL + '?' + params.toString(), { method: 'GET', redirect: 'follow' });
+      const result = await res.json();
+      if (result.success) {
+        showToast('Saved & sent to Telegram!', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 1500);
+      } else {
+        showToast('Error: ' + (result.error || 'Unknown error'), 'error');
+      }
+    } catch (err) {
+      showToast('Connection error. Please try again.', 'error');
+    }
+  }
+
+  // TOAST
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (type ? ' ' + type : '');
+    if (type === 'success') setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // MOBILE
+  function openSidebar()  { document.getElementById('sidebar').classList.add('open');  document.getElementById('overlay').classList.add('show'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+  function logout() { sessionStorage.removeItem('nt_user'); window.location.href = 'index.html'; }
+</script>
+</body>
+</html>

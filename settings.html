@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nokia Tracker — Settings</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-w: 220px;
+      --blue: #2563eb; --blue-light: #eff6ff;
+      --border: #e5e7eb; --bg: #f0f2f7;
+      --white: #ffffff; --text: #111827;
+      --text-sec: #6b7280; --text-ter: #9ca3af;
+      --red: #dc2626; --green: #059669; --amber: #d97706;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100; transition: transform 0.25s; }
+    .sidebar-brand { padding: 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .brand-logo { width: 34px; height: 34px; border-radius: 8px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .brand-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+    .brand-sub { font-size: 10px; color: var(--text-ter); }
+    .sidebar-user { padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .user-role { font-size: 11px; color: var(--text-ter); }
+    .nav { padding: 8px 0; flex: 1; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; color: var(--text-sec); cursor: pointer; text-decoration: none; transition: background 0.1s; }
+    .nav-item:hover { background: #f9fafb; color: var(--text); }
+    .nav-item.active { background: var(--blue-light); color: var(--blue); font-weight: 500; }
+    .nav-item i { font-size: 16px; }
+    .nav-divider { height: 1px; background: var(--border); margin: 6px 0; }
+    .nav-sub { padding-left: 32px; font-size: 12px; }
+    .logout { padding: 12px 16px; border-top: 1px solid var(--border); }
+    .logout a { font-size: 12px; color: var(--red); cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+
+    /* MAIN */
+    .main { flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column; min-width: 0; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 50; }
+    .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .topbar-sub { font-size: 12px; color: var(--text-ter); }
+    .menu-btn { display: none; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--white); cursor: pointer; font-size: 18px; color: var(--text-sec); align-items: center; justify-content: center; }
+
+    /* CONTENT */
+    .content { padding: 16px 20px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+    /* SECTION CARD */
+    .section-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .section-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .section-count { font-size: 12px; color: var(--text-ter); font-weight: 400; }
+    .section-body { padding: 14px 16px; }
+    .section-note { font-size: 12px; color: var(--text-ter); margin-top: 10px; display: flex; align-items: center; gap: 5px; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: inherit; transition: background 0.1s; }
+    .btn:hover { background: #f9fafb; }
+    .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .ico-btn { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: background 0.1s; }
+    .ico-btn:hover { background: #f9fafb; }
+    .ico-btn.edit { color: var(--amber); border-color: #fcd34d; background: #fffbeb; }
+    .ico-btn.del  { color: var(--red);   border-color: #fca5a5; background: #fff5f5; }
+    .ico-btn.show { color: var(--blue);  border-color: #93c5fd; background: var(--blue-light); }
+
+    /* PARTNERS GRID */
+    .partners-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .partner-card { background: #f9fafb; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; min-width: 130px; }
+    .partner-card.hidden-p { opacity: 0.5; }
+    .p-avatar { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .p-info { flex: 1; min-width: 0; }
+    .p-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .p-links { font-size: 11px; color: var(--text-ter); }
+    .p-hidden { font-size: 11px; color: var(--red); }
+    .p-actions { display: flex; gap: 4px; }
+
+    /* REGIONS */
+    .regions-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .region-tag { display: flex; align-items: center; gap: 6px; background: #f9fafb; border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 13px; color: var(--text); }
+    .tag-btn { cursor: pointer; font-size: 12px; display: flex; align-items: center; color: var(--text-ter); transition: color 0.1s; }
+    .tag-btn:hover { color: var(--red); }
+    .tag-btn.edit-tag:hover { color: var(--amber); }
+
+    /* SCOPES */
+    .scopes-list { display: flex; flex-direction: column; gap: 6px; }
+    .scope-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border); }
+    .scope-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .scope-links { font-size: 12px; color: var(--text-ter); }
+    .scope-actions { display: flex; gap: 4px; }
+
+    /* ADD ROW */
+    .add-row { display: flex; gap: 8px; margin-top: 10px; }
+    .add-input { flex: 1; height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-size: 13px; color: var(--text); background: var(--white); outline: none; font-family: inherit; }
+    .add-input:focus { border-color: var(--blue); }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--white); border-radius: 12px; width: 100%; max-width: 400px; overflow: hidden; }
+    .modal-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .modal-close { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-sec); }
+    .modal-body { padding: 16px 18px; }
+    .modal-footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+    .field label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 5px; font-weight: 500; }
+    .field input { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-size: 13px; color: var(--text); background: var(--white); outline: none; font-family: inherit; }
+    .field input:focus { border-color: var(--blue); }
+    .color-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color 0.1s; }
+    .color-dot.selected { border-color: var(--text); }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; display: none; align-items: center; gap: 8px; z-index: 999; }
+    .toast.show { display: flex; }
+    .toast.success { background: var(--green); }
+    .toast.error   { background: var(--red); }
+
+    /* OVERLAY */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 99; }
+    .overlay.show { display: block; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .partners-grid { flex-direction: column; }
+      .menu-btn { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"></div>
+
+<!-- PARTNER MODAL -->
+<div class="modal-overlay" id="partnerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="partnerModalTitle">Add Partner</span>
+      <div class="modal-close" onclick="closePartnerModal()"><i class="ti ti-x"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom:12px;">
+        <label>Partner Name *</label>
+        <input type="text" id="pName" placeholder="e.g. NJV" />
+      </div>
+      <div class="field">
+        <label>Avatar Color</label>
+        <div class="color-row" id="colorRow"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closePartnerModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePartner()"><i class="ti ti-check"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCOPE / REGION MODAL -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="itemModalTitle">Edit</span>
+      <div class="modal-close" onclick="closeItemModal()"><i class="ti ti-x"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label id="itemModalLabel">Name *</label>
+        <input type="text" id="itemName" placeholder="" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeItemModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()"><i class="ti ti-check"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">NT</div>
+      <div><div class="brand-name">Nokia Tracker</div><div class="brand-sub">One Time</div></div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">KB</div>
+      <div><div class="user-name" id="sidebarName">Karim BooKa</div><div class="user-role" id="sidebarRole">Admin</div></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-item" href="dashboard.html"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a class="nav-item" href="add-link.html"><i class="ti ti-plus"></i> Add New Link</a>
+      <a class="nav-item" href="scopes.html"><i class="ti ti-topology-star"></i> Scopes</a>
+      <a class="nav-item" href="activity-log.html"><i class="ti ti-clipboard-list"></i> Activity Log</a>
+      <a class="nav-item" href="tracking.html"><i class="ti ti-hard-hat"></i> Tracking Engineers</a>
+      <a class="nav-item" href="users.html"><i class="ti ti-users"></i> Users Management</a>
+      <div class="nav-divider"></div>
+      <a class="nav-item active" href="settings.html"><i class="ti ti-settings"></i> Settings</a>
+      <a class="nav-item nav-sub active" href="#partners"><i class="ti ti-users-group"></i> Partners</a>
+      <a class="nav-item nav-sub" href="#regions"><i class="ti ti-map-pin"></i> Regions</a>
+      <a class="nav-item nav-sub" href="#scopes"><i class="ti ti-topology-star"></i> Scopes</a>
+      <div class="nav-divider"></div>
+      <a class="nav-item" href="settings-system.html"><i class="ti ti-settings-2"></i> Settings System</a>
+      <a class="nav-item nav-sub" href="settings-system.html#telegram"><i class="ti ti-brand-telegram"></i> Telegram</a>
+      <a class="nav-item nav-sub" href="settings-system.html#google"><i class="ti ti-brand-google"></i> Google</a>
+    </nav>
+    <div class="logout"><a onclick="logout()"><i class="ti ti-logout"></i> Sign Out</a></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <div>
+        <div class="topbar-title">Settings</div>
+        <div class="topbar-sub">Manage partners, regions and scopes</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- PARTNERS -->
+      <div class="section-card" id="partners">
+        <div class="section-header">
+          <div class="section-title"><i class="ti ti-users-group"></i> Partners Management <span class="section-count" id="partnersCount"></span></div>
+          <button class="btn btn-primary btn-sm" onclick="openPartnerModal()"><i class="ti ti-plus"></i> Add Partner</button>
+        </div>
+        <div class="section-body">
+          <div class="partners-grid" id="partnersGrid"></div>
+          <p class="section-note"><i class="ti ti-info-circle"></i> Hidden partners — data saved but not shown in dashboard</p>
+        </div>
+      </div>
+
+      <!-- REGIONS -->
+      <div class="section-card" id="regions">
+        <div class="section-header">
+          <div class="section-title"><i class="ti ti-map-pin"></i> Regions Management <span class="section-count" id="regionsCount"></span></div>
+        </div>
+        <div class="section-body">
+          <div class="regions-row" id="regionsRow"></div>
+          <div class="add-row">
+            <input class="add-input" id="newRegion" placeholder="New region name..." />
+            <button class="btn btn-primary btn-sm" onclick="addRegion()"><i class="ti ti-plus"></i> Add</button>
+          </div>
+          <p class="section-note"><i class="ti ti-info-circle"></i> Regions appear in Add Link form and table filters</p>
+        </div>
+      </div>
+
+      <!-- SCOPES -->
+      <div class="section-card" id="scopes">
+        <div class="section-header">
+          <div class="section-title"><i class="ti ti-topology-star"></i> Scopes Management <span class="section-count" id="scopesCount"></span></div>
+        </div>
+        <div class="section-body">
+          <div class="scopes-list" id="scopesList"></div>
+          <div class="add-row">
+            <input class="add-input" id="newScope" placeholder="New scope name..." />
+            <button class="btn btn-primary btn-sm" onclick="addScope()"><i class="ti ti-plus"></i> Add</button>
+          </div>
+          <p class="section-note"><i class="ti ti-info-circle"></i> Scopes with links cannot be deleted — hide them instead</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const user = JSON.parse(sessionStorage.getItem('nt_user') || 'null');
+  if (!user) window.location.href = 'index.html';
+  if (user) {
+    const initials = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sidebarAvatar').textContent = initials;
+    document.getElementById('sidebarName').textContent   = user.name;
+    document.getElementById('sidebarRole').textContent   = user.role.replace('_',' ');
+  }
+
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxtB7ezMX6zzbWaPadp71ohAPYgPHH8O1VZTx34SPinkfOLjSWZ_iNLI9mO2EUC4Qn6/exec';
+  const COLORS = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2','#6b7280','#be185d','#065f46','#1e40af'];
+  let selectedColor = COLORS[0];
+  let editingPartner = null;
+  let editingItem = null;
+  let itemType = '';
+
+  let PARTNERS = [];
+  let REGIONS  = [];
+  let SCOPES   = [];
+
+  // ── FETCH ALL FROM API ──
+  async function fetchAll() {
+    try {
+      const [pRes, rRes, sRes] = await Promise.all([
+        fetch(API_URL + '?action=getPartners', {method:'GET', redirect:'follow'}),
+        fetch(API_URL + '?action=getRegions',  {method:'GET', redirect:'follow'}),
+        fetch(API_URL + '?action=getScopes',   {method:'GET', redirect:'follow'}),
+      ]);
+      const pd = await pRes.json();
+      const rd = await rRes.json();
+      const sd = await sRes.json();
+
+      PARTNERS = Array.isArray(pd) ? pd.map((p,i) => ({
+        id:     p['ID']||i,
+        name:   p['Partner Name']||'',
+        color:  COLORS[i % COLORS.length],
+        links:  0,
+        hidden: p['Status'] !== 'Active',
+        sheetId: p['ID']||''
+      })) : [];
+
+      REGIONS = Array.isArray(rd) ? rd.map(r => ({
+        name:   r['Region Name']||'',
+        status: r['Status']||'Active',
+        sheetId: r['ID']||''
+      })) : [];
+
+      SCOPES = Array.isArray(sd) ? sd.map(s => ({
+        name:   s['Scope Name']||'',
+        links:  0,
+        status: s['Status']||'Active',
+        sheetId: s['ID']||''
+      })) : [];
+
+    } catch(err) { PARTNERS=[]; REGIONS=[]; SCOPES=[]; }
+    renderPartners();
+    renderRegions();
+    renderScopes();
+  }
+
+  // ── RENDER PARTNERS ──
+  function renderPartners() {
+    document.getElementById('partnersCount').textContent = `${PARTNERS.length} partners`;
+    document.getElementById('partnersGrid').innerHTML = PARTNERS.map(p => `
+      <div class="partner-card ${p.hidden?'hidden-p':''}">
+        <div class="p-avatar" style="background:${p.color};">${p.name.slice(0,2).toUpperCase()}</div>
+        <div class="p-info">
+          <div class="p-name">${p.name}</div>
+          <div class="p-links">${p.links} links</div>
+          ${p.hidden ? '<div class="p-hidden">Hidden</div>' : ''}
+        </div>
+        <div class="p-actions">
+          <div class="ico-btn edit" onclick="openEditPartner(${p.id})"><i class="ti ti-edit"></i></div>
+          ${p.hidden
+            ? `<div class="ico-btn show" onclick="togglePartner(${p.id})"><i class="ti ti-eye"></i></div>`
+            : `<div class="ico-btn del"  onclick="togglePartner(${p.id})"><i class="ti ti-eye-off"></i></div>`
+          }
+        </div>
+      </div>`).join('');
+  }
+
+  // ── RENDER REGIONS ──
+  function renderRegions() {
+    document.getElementById('regionsCount').textContent = `${REGIONS.length} regions`;
+    document.getElementById('regionsRow').innerHTML = REGIONS.map((r,i) => `
+      <div class="region-tag">
+        ${r.name}
+        <span class="tag-btn edit-tag" onclick="openEditItem('region',${i},'${r.name}')"><i class="ti ti-edit"></i></span>
+        <span class="tag-btn" onclick="deleteRegion(${i})"><i class="ti ti-x"></i></span>
+      </div>`).join('');
+  }
+
+  // ── RENDER SCOPES ──
+  function renderScopes() {
+    document.getElementById('scopesCount').textContent = `${SCOPES.length} scopes`;
+    document.getElementById('scopesList').innerHTML = SCOPES.map((s,i) => `
+      <div class="scope-row">
+        <div>
+          <div class="scope-name">${s.name}</div>
+          <div class="scope-links">${s.links} links</div>
+        </div>
+        <div class="scope-actions">
+          <div class="ico-btn edit" onclick="openEditItem('scope',${i},'${s.name}')"><i class="ti ti-edit"></i></div>
+          ${s.links > 0
+            ? `<div class="ico-btn del" title="Hide scope" onclick="showToast('Scope has links — hide it instead','error')"><i class="ti ti-eye-off"></i></div>`
+            : `<div class="ico-btn del" onclick="deleteScope(${i})"><i class="ti ti-trash"></i></div>`
+          }
+        </div>
+      </div>`).join('');
+  }
+
+  // ── PARTNER MODAL ──
+  function openPartnerModal() {
+    editingPartner = null;
+    document.getElementById('partnerModalTitle').textContent = 'Add Partner';
+    document.getElementById('pName').value = '';
+    selectedColor = COLORS[0];
+    renderColorPicker();
+    document.getElementById('partnerModal').classList.add('show');
+  }
+
+  function openEditPartner(id) {
+    editingPartner = id;
+    const p = PARTNERS.find(x => x.id === id);
+    document.getElementById('partnerModalTitle').textContent = 'Edit Partner';
+    document.getElementById('pName').value = p.name;
+    selectedColor = p.color;
+    renderColorPicker();
+    document.getElementById('partnerModal').classList.add('show');
+  }
+
+  function closePartnerModal() { document.getElementById('partnerModal').classList.remove('show'); }
+
+  function renderColorPicker() {
+    document.getElementById('colorRow').innerHTML = COLORS.map(c =>
+      `<div class="color-dot ${c===selectedColor?'selected':''}" style="background:${c};" onclick="selectColor('${c}')"></div>`
+    ).join('');
+  }
+
+  function selectColor(c) { selectedColor = c; renderColorPicker(); }
+
+  function savePartner() {
+    const name = document.getElementById('pName').value.trim();
+    if (!name) { showToast('Partner name is required', 'error'); return; }
+    if (editingPartner) {
+      const idx = PARTNERS.findIndex(p => p.id === editingPartner);
+      PARTNERS[idx].name  = name;
+      PARTNERS[idx].color = selectedColor;
+      showToast('Partner updated!', 'success');
+    } else {
+      const newId = Math.max(...PARTNERS.map(p=>p.id)) + 1;
+      PARTNERS.push({ id:newId, name, color:selectedColor, links:0, hidden:false });
+      showToast('Partner added!', 'success');
+    }
+    closePartnerModal();
+    showToast('Saving...', '');
+    fetch(API_URL + '?action=addPartner&partnerName=' + encodeURIComponent(name) + '&status=Active', {method:'GET', redirect:'follow'})
+      .then(() => fetchAll());
+  }
+
+  function togglePartner(id) {
+    const p = PARTNERS.find(x => x.id === id);
+    p.hidden = !p.hidden;
+    renderPartners();
+    showToast(p.hidden ? 'Partner hidden' : 'Partner visible', 'success');
+    // TODO: update Google Sheets
+  }
+
+  // ── REGIONS ──
+  function addRegion() {
+    const val = document.getElementById('newRegion').value.trim();
+    if (!val) return;
+    if (REGIONS.includes(val)) { showToast('Region already exists', 'error'); return; }
+    REGIONS.push(val);
+    document.getElementById('newRegion').value = '';
+    showToast('Adding...', '');
+    fetch(API_URL + '?action=addRegion&regionName=' + encodeURIComponent(val) + '&status=Active', {method:'GET', redirect:'follow'})
+      .then(() => { fetchAll(); showToast('Region added!', 'success'); });
+  }
+
+  function deleteRegion(i) {
+    REGIONS.splice(i, 1);
+    renderRegions();
+    showToast('Region deleted', 'success');
+  }
+
+  // ── SCOPES ──
+  function addScope() {
+    const val = document.getElementById('newScope').value.trim();
+    if (!val) return;
+    SCOPES.push({ name:val, links:0 });
+    document.getElementById('newScope').value = '';
+    showToast('Adding...', '');
+    fetch(API_URL + '?action=addScope&scopeName=' + encodeURIComponent(val) + '&status=Active', {method:'GET', redirect:'follow'})
+      .then(() => { fetchAll(); showToast('Scope added!', 'success'); });
+  }
+
+  function deleteScope(i) {
+    SCOPES.splice(i, 1);
+    renderScopes();
+    showToast('Scope deleted', 'success');
+  }
+
+  // ── ITEM MODAL (region/scope edit) ──
+  function openEditItem(type, idx, current) {
+    itemType = type;
+    editingItem = idx;
+    document.getElementById('itemModalTitle').textContent = `Edit ${type === 'region' ? 'Region' : 'Scope'}`;
+    document.getElementById('itemModalLabel').textContent = `${type === 'region' ? 'Region' : 'Scope'} Name *`;
+    document.getElementById('itemName').value = current;
+    document.getElementById('itemModal').classList.add('show');
+  }
+
+  function closeItemModal() { document.getElementById('itemModal').classList.remove('show'); }
+
+  function saveItem() {
+    const val = document.getElementById('itemName').value.trim();
+    if (!val) { showToast('Name is required', 'error'); return; }
+    if (itemType === 'region') {
+      REGIONS[editingItem] = val;
+      renderRegions();
+    } else {
+      SCOPES[editingItem].name = val;
+      renderScopes();
+    }
+    closeItemModal();
+    showToast('Updated successfully!', 'success');
+    // TODO: update Google Sheets
+  }
+
+  // ── TOAST ──
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (type ? ' ' + type : '');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function openSidebar()  { document.getElementById('sidebar').classList.add('open');  document.getElementById('overlay').classList.add('show'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+  function logout() { sessionStorage.removeItem('nt_user'); window.location.href = 'index.html'; }
+
+  // Allow Enter key on inputs
+  document.getElementById('newRegion').addEventListener('keydown', e => { if (e.key==='Enter') addRegion(); });
+  document.getElementById('newScope').addEventListener('keydown',  e => { if (e.key==='Enter') addScope(); });
+
+  fetchAll();
+</script>
+</body>
+</html>

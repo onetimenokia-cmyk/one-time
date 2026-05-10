@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nokia Tracker — Settings System</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-w: 220px;
+      --blue: #2563eb; --blue-light: #eff6ff;
+      --border: #e5e7eb; --bg: #f0f2f7;
+      --white: #ffffff; --text: #111827;
+      --text-sec: #6b7280; --text-ter: #9ca3af;
+      --red: #dc2626; --green: #059669; --amber: #d97706;
+      --tg: #0088cc; --goog: #ea4335; --render: #6366f1;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100; transition: transform 0.25s; }
+    .sidebar-brand { padding: 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .brand-logo { width: 34px; height: 34px; border-radius: 8px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .brand-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+    .brand-sub { font-size: 10px; color: var(--text-ter); }
+    .sidebar-user { padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .user-role { font-size: 11px; color: var(--text-ter); }
+    .nav { padding: 8px 0; flex: 1; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; color: var(--text-sec); cursor: pointer; text-decoration: none; transition: background 0.1s; }
+    .nav-item:hover { background: #f9fafb; color: var(--text); }
+    .nav-item.active { background: var(--blue-light); color: var(--blue); font-weight: 500; }
+    .nav-item i { font-size: 16px; }
+    .nav-divider { height: 1px; background: var(--border); margin: 6px 0; }
+    .nav-sub { padding-left: 32px; font-size: 12px; }
+    .logout { padding: 12px 16px; border-top: 1px solid var(--border); }
+    .logout a { font-size: 12px; color: var(--red); cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+
+    /* MAIN */
+    .main { flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column; min-width: 0; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .topbar-sub { font-size: 12px; color: var(--text-ter); }
+    .menu-btn { display: none; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--white); cursor: pointer; font-size: 18px; color: var(--text-sec); align-items: center; justify-content: center; }
+
+    /* CONTENT */
+    .content { padding: 16px 20px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+    /* SECTION */
+    .section-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .section-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .section-body { padding: 16px; }
+    .sub-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* BADGES */
+    .badge-connected    { background: #d1fae5; color: #065f46; font-size: 11px; padding: 3px 10px; border-radius: 5px; font-weight: 500; }
+    .badge-disconnected { background: #fee2e2; color: #991b1b; font-size: 11px; padding: 3px 10px; border-radius: 5px; font-weight: 500; }
+
+    /* STATUS ROW */
+    .status-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f9fafb; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border); }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .status-info { flex: 1; }
+    .status-text { font-size: 13px; font-weight: 500; color: var(--text); }
+    .status-sub  { font-size: 11px; color: var(--text-ter); margin-top: 2px; }
+    .ping-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* FIELD */
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 5px; font-weight: 500; }
+    .field input, .field textarea { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-size: 12px; color: var(--text); background: var(--white); outline: none; font-family: monospace; transition: border-color 0.15s; }
+    .field input:focus, .field textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .field input.readonly { background: #f9fafb; color: var(--text-sec); }
+    .field textarea { height: 100px; padding: 10px 12px; resize: vertical; font-size: 11px; }
+    .field-hint { font-size: 11px; color: var(--text-ter); margin-top: 4px; }
+    .input-row { display: flex; gap: 8px; align-items: center; }
+    .input-row input { flex: 1; }
+
+    /* BTNS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: inherit; transition: background 0.1s; white-space: nowrap; }
+    .btn:hover { background: #f9fafb; }
+    .btn-tg     { background: var(--tg);     color: #fff; border-color: var(--tg); }
+    .btn-tg:hover { background: #0077b5; }
+    .btn-google { background: var(--goog);   color: #fff; border-color: var(--goog); }
+    .btn-google:hover { background: #c62828; }
+    .btn-render { background: var(--render); color: #fff; border-color: var(--render); }
+    .btn-render:hover { background: #4f46e5; }
+    .btn-test   { background: #f0fdf4; color: #166534; border-color: #86efac; }
+    .btn-sync   { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+    .btn-row    { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--border); }
+    .btn-sm     { padding: 5px 12px; font-size: 12px; }
+    .ico-btn    { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-sec); font-size: 15px; flex-shrink: 0; }
+    .ico-btn:hover { background: #f9fafb; }
+    .ico-btn.del { color: var(--red); border-color: #fca5a5; background: #fff5f5; }
+    .ico-btn.edit { color: var(--amber); border-color: #fcd34d; background: #fffbeb; }
+
+    /* INFO BOX */
+    .info-box { background: var(--blue-light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: #1d4ed8; }
+
+    /* GROUPS */
+    .groups-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .group-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border); }
+    .group-info { flex: 1; }
+    .group-name    { font-size: 13px; font-weight: 500; color: var(--text); }
+    .group-id      { font-size: 11px; color: var(--text-ter); font-family: monospace; }
+    .group-partner { font-size: 11px; color: var(--blue); margin-top: 2px; }
+    .group-actions { display: flex; gap: 4px; }
+    .add-group-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: center; }
+    .add-input { height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-size: 12px; color: var(--text); background: var(--white); outline: none; font-family: inherit; width: 100%; }
+    .add-input:focus { border-color: var(--blue); }
+    .add-input.mono { font-family: monospace; }
+
+    /* MEMBERS */
+    .hint-bar { background: #f9fafb; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--text-sec); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); }
+    .partner-block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+    .partner-block:last-child { margin-bottom: 0; }
+    .partner-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f9fafb; }
+    .partner-left { display: flex; align-items: center; gap: 10px; }
+    .partner-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .partner-name-txt { font-size: 13px; font-weight: 500; color: var(--text); }
+    .partner-count-txt { font-size: 11px; color: var(--text-ter); }
+    .partner-body { padding: 10px 14px; }
+    .add-member-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .member-input { flex: 1; height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-size: 13px; color: var(--text); background: var(--white); outline: none; font-family: inherit; }
+    .member-input:focus { border-color: var(--blue); }
+    .role-select { height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 8px; font-size: 12px; color: var(--text-sec); background: var(--white); outline: none; width: 110px; }
+    .add-member-btn { height: 34px; padding: 0 14px; border-radius: 8px; background: var(--blue); color: #fff; border: none; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; font-family: inherit; }
+    .add-member-btn:hover { background: #1d4ed8; }
+    .members-list { display: flex; flex-direction: column; gap: 6px; }
+    .member-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; background: #f9fafb; border-radius: 7px; border: 1px solid var(--border); }
+    .member-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--tg); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .member-username { flex: 1; font-size: 13px; color: var(--text); }
+    .member-role-badge { font-size: 11px; padding: 2px 8px; border-radius: 5px; font-weight: 500; }
+    .role-admin  { background: #dbeafe; color: #1d4ed8; }
+    .role-member { background: #f3f4f6; color: #374151; }
+    .del-btn { width: 24px; height: 24px; border-radius: 5px; border: 1px solid #fca5a5; background: #fff5f5; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--red); font-size: 12px; flex-shrink: 0; }
+    .no-members { font-size: 12px; color: var(--text-ter); text-align: center; padding: 8px 0; }
+
+    /* SHEETS GRID */
+    .sheets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .sheet-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border); }
+    .sheet-item.highlight { border-color: var(--blue); background: var(--blue-light); }
+    .sheet-icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .sheet-info { flex: 1; }
+    .sheet-name { font-size: 12px; font-weight: 500; color: var(--text); }
+    .sheet-desc { font-size: 11px; color: var(--text-ter); }
+    .sheet-ok { font-size: 13px; color: var(--green); }
+
+    /* FOLDERS */
+    .folders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .folder-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border); }
+    .folder-item i { font-size: 16px; color: #fbbf24; }
+    .folder-name { font-size: 12px; color: var(--text); font-weight: 500; }
+    .folder-sub  { font-size: 11px; color: var(--text-ter); }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; display: none; align-items: center; gap: 8px; z-index: 999; }
+    .toast.show { display: flex; }
+    .toast.success { background: var(--green); }
+    .toast.error   { background: var(--red); }
+
+    /* OVERLAY */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 99; }
+    .overlay.show { display: block; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .add-group-grid { grid-template-columns: 1fr; }
+      .add-member-row { flex-wrap: wrap; }
+      .sheets-grid, .folders-grid { grid-template-columns: 1fr 1fr; }
+      .menu-btn { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">NT</div>
+      <div><div class="brand-name">Nokia Tracker</div><div class="brand-sub">One Time</div></div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">KB</div>
+      <div><div class="user-name" id="sidebarName">Karim BooKa</div><div class="user-role" id="sidebarRole">Admin</div></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-item" href="dashboard.html"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a class="nav-item" href="add-link.html"><i class="ti ti-plus"></i> Add New Link</a>
+      <a class="nav-item" href="scopes.html"><i class="ti ti-topology-star"></i> Scopes</a>
+      <a class="nav-item" href="activity-log.html"><i class="ti ti-clipboard-list"></i> Activity Log</a>
+      <a class="nav-item" href="tracking.html"><i class="ti ti-hard-hat"></i> Tracking Engineers</a>
+      <a class="nav-item" href="users.html"><i class="ti ti-users"></i> Users Management</a>
+      <div class="nav-divider"></div>
+      <a class="nav-item" href="settings.html"><i class="ti ti-settings"></i> Settings</a>
+      <a class="nav-item nav-sub" href="settings.html#partners"><i class="ti ti-users-group"></i> Partners</a>
+      <a class="nav-item nav-sub" href="settings.html#regions"><i class="ti ti-map-pin"></i> Regions</a>
+      <a class="nav-item nav-sub" href="settings.html#scopes"><i class="ti ti-topology-star"></i> Scopes</a>
+      <div class="nav-divider"></div>
+      <a class="nav-item active" href="settings-system.html"><i class="ti ti-settings-2"></i> Settings System</a>
+      <a class="nav-item nav-sub active" href="#telegram"><i class="ti ti-brand-telegram"></i> Telegram</a>
+      <a class="nav-item nav-sub" href="#google"><i class="ti ti-brand-google"></i> Google</a>
+    </nav>
+    <div class="logout"><a onclick="logout()"><i class="ti ti-logout"></i> Sign Out</a></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+        <div>
+          <div class="topbar-title">Settings System</div>
+          <div class="topbar-sub">Telegram Bot & Google configuration</div>
+        </div>
+      </div>
+      <a href="https://dashboard.render.com" target="_blank" class="btn btn-render"><i class="ti ti-external-link"></i> Render Dashboard</a>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══════════════ TELEGRAM ═══════════════ -->
+      <div class="section-card" id="telegram">
+        <div class="section-header">
+          <div class="section-title"><i class="ti ti-brand-telegram" style="color:var(--tg);"></i> Telegram Settings</div>
+          <span class="badge-connected" id="tgStatus">Connected</span>
+        </div>
+        <div class="section-body">
+
+          <!-- BOT STATUS -->
+          <div class="status-row">
+            <div class="status-dot" style="background:var(--green);"></div>
+            <div class="status-info">
+              <div class="status-text">Nokia One Time Bot — Online</div>
+              <div class="status-sub">Python — Render — auto-reconnect active</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);">
+              <div class="ping-dot"></div> Live
+            </div>
+          </div>
+
+          <!-- WEBHOOK -->
+          <div class="sub-title"><i class="ti ti-webhook"></i> Webhook URL</div>
+          <div class="info-box"><i class="ti ti-info-circle"></i> This URL is fixed — edit only if bot is redeployed on Render</div>
+          <div class="field">
+            <label>Webhook URL</label>
+            <div class="input-row">
+              <input type="text" id="webhookUrl" class="readonly" value="https://nokiaonetime-bot.onrender.com/webhook" readonly />
+              <div class="ico-btn" onclick="copyWebhook()" title="Copy"><i class="ti ti-copy" id="copyIcon"></i></div>
+              <div class="ico-btn" onclick="toggleWebhookEdit()" title="Edit"><i class="ti ti-edit"></i></div>
+            </div>
+            <div class="field-hint">Connects the system to the Telegram Bot hosted on Render</div>
+          </div>
+          <div class="btn-row" style="margin-bottom:16px;">
+            <button class="btn btn-test" onclick="testWebhook(this)"><i class="ti ti-plug"></i> Test Connection</button>
+            <button class="btn btn-tg"   onclick="saveWebhook(this)"><i class="ti ti-device-floppy"></i> Save Webhook</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- PARTNER GROUPS -->
+          <div class="sub-title"><i class="ti ti-device-mobile-message"></i> Partner Groups <span style="font-size:12px;color:var(--text-ter);font-weight:400;">— one group per partner</span></div>
+          <div class="groups-list" id="groupsList"></div>
+          <div class="add-group-grid">
+            <input class="add-input" id="gName"    placeholder="Group name..." />
+            <input class="add-input mono" id="gId" placeholder="Group ID (-100...)" />
+            <select class="add-input" id="gPartner">
+              <option value="">-- Partner --</option>
+              <option>NJV</option><option>CTC</option><option>AWTG</option>
+              <option>AMC</option><option>Al-habdan</option><option>Nu-Era</option>
+            </select>
+            <button class="btn btn-tg btn-sm" onclick="addGroup()"><i class="ti ti-plus"></i> Add</button>
+          </div>
+          <div class="btn-row" style="margin-top:14px;">
+            <button class="btn btn-tg" onclick="saveGroups(this)"><i class="ti ti-device-floppy"></i> Save Groups</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- TELEGRAM MEMBERS -->
+          <div class="sub-title"><i class="ti ti-users"></i> Telegram Group Members <span style="font-size:12px;color:var(--text-ter);font-weight:400;">— set members per partner</span></div>
+          <div class="hint-bar"><i class="ti ti-info-circle"></i> Add Telegram Username without @ — e.g. ahmed_njv. New partners auto-appear here.</div>
+          <div id="partnerBlocks"></div>
+
+        </div>
+      </div>
+
+      <!-- ═══════════════ GOOGLE ═══════════════ -->
+      <div class="section-card" id="google">
+        <div class="section-header">
+          <div class="section-title"><i class="ti ti-brand-google" style="color:var(--goog);"></i> Google Settings</div>
+          <span class="badge-connected">Connected</span>
+        </div>
+        <div class="section-body">
+
+          <!-- SHEETS -->
+          <div class="sub-title"><i class="ti ti-table" style="color:#0f9d58;"></i> Google Sheets</div>
+          <div class="status-row">
+            <div class="status-dot" style="background:var(--green);"></div>
+            <div class="status-info">
+              <div class="status-text">Sheets connected — last sync 2 min ago</div>
+              <div class="status-sub">All data read & written to Google Sheets — nothing saved on device</div>
+            </div>
+            <button class="btn btn-sync btn-sm" onclick="syncNow(this)"><i class="ti ti-refresh"></i> Sync Now</button>
+          </div>
+
+          <div class="field">
+            <label>Google Sheet ID *</label>
+            <div class="input-row">
+              <input type="text" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74..." />
+              <div class="ico-btn" onclick="copyField('sheetId')" title="Copy"><i class="ti ti-copy"></i></div>
+              <a href="https://docs.google.com/spreadsheets" target="_blank"><div class="ico-btn" title="Open Sheet"><i class="ti ti-external-link"></i></div></a>
+            </div>
+            <div class="field-hint">Found in Sheet URL: docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/edit</div>
+          </div>
+
+          <div class="field">
+            <label>Service Account Email *</label>
+            <input type="text" id="saEmail" placeholder="nokia-tracker@project.iam.gserviceaccount.com" style="font-family:inherit;" />
+            <div class="field-hint">Share the Google Sheet with this email as Editor</div>
+          </div>
+
+          <div class="field">
+            <label>Service Account Key (JSON) *</label>
+            <textarea id="saKey" placeholder='{"type":"service_account","project_id":"nokia-tracker","private_key_id":"...","client_email":"..."}'></textarea>
+            <div class="field-hint">Download from Google Cloud Console → Service Accounts → Keys</div>
+          </div>
+
+          <!-- SHEET TABS -->
+          <div class="sub-title" style="margin-top:4px;"><i class="ti ti-layout-grid"></i> Sheet Tabs</div>
+          <div class="sheets-grid">
+            <div class="sheet-item"><div class="sheet-icon" style="background:#e8f5e9;"><i class="ti ti-link" style="color:#0f9d58;"></i></div><div class="sheet-info"><div class="sheet-name">Links</div><div class="sheet-desc">All links + Telegram group</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item"><div class="sheet-icon" style="background:#e3f2fd;"><i class="ti ti-users" style="color:#1a73e8;"></i></div><div class="sheet-info"><div class="sheet-name">Users</div><div class="sheet-desc">Users & permissions</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item"><div class="sheet-icon" style="background:#fff3e0;"><i class="ti ti-users-group" style="color:#f57c00;"></i></div><div class="sheet-info"><div class="sheet-name">Partners</div><div class="sheet-desc">Partners list</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item"><div class="sheet-icon" style="background:#f3e5f5;"><i class="ti ti-map-pin" style="color:#7b1fa2;"></i></div><div class="sheet-info"><div class="sheet-name">Regions</div><div class="sheet-desc">Regions list</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item"><div class="sheet-icon" style="background:#e8eaf6;"><i class="ti ti-topology-star" style="color:#3949ab;"></i></div><div class="sheet-info"><div class="sheet-name">Scopes</div><div class="sheet-desc">Scopes list</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item"><div class="sheet-icon" style="background:#fce4ec;"><i class="ti ti-clipboard-list" style="color:#c62828;"></i></div><div class="sheet-info"><div class="sheet-name">Activity Log</div><div class="sheet-desc">All system activities</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item"><div class="sheet-icon" style="background:#e0f7fa;"><i class="ti ti-settings" style="color:#00838f;"></i></div><div class="sheet-info"><div class="sheet-name">Settings</div><div class="sheet-desc">System settings</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item"><div class="sheet-icon" style="background:#e8f5e9;"><i class="ti ti-brand-telegram" style="color:var(--tg);"></i></div><div class="sheet-info"><div class="sheet-name">Telegram Groups</div><div class="sheet-desc">Groups & members</div></div><i class="ti ti-check sheet-ok"></i></div>
+            <div class="sheet-item highlight"><div class="sheet-icon" style="background:#dbeafe;"><i class="ti ti-map-pin" style="color:var(--blue);"></i></div><div class="sheet-info"><div class="sheet-name">Engineers Tracking</div><div class="sheet-desc">Live location — lat/lng/time</div></div><i class="ti ti-check sheet-ok"></i></div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-test"   onclick="testSheets(this)"><i class="ti ti-plug"></i> Test Connection</button>
+            <button class="btn btn-google" onclick="saveSheets(this)"><i class="ti ti-device-floppy"></i> Save Sheets Settings</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- DRIVE -->
+          <div class="sub-title"><i class="ti ti-brand-google-drive" style="color:#fbbf24;"></i> Google Drive</div>
+          <div class="status-row">
+            <div class="status-dot" style="background:var(--green);"></div>
+            <div class="status-info">
+              <div class="status-text">Drive connected — photos & documents stored on Google</div>
+              <div class="status-sub">Nothing saved on user device — all files go to Drive</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Drive Folder ID *</label>
+            <div class="input-row">
+              <input type="text" id="driveId" placeholder="1a2b3c4d5e6f_nokia_tracker_files" />
+              <div class="ico-btn" onclick="copyField('driveId')" title="Copy"><i class="ti ti-copy"></i></div>
+              <a href="https://drive.google.com" target="_blank"><div class="ico-btn" title="Open Drive"><i class="ti ti-external-link"></i></div></a>
+            </div>
+            <div class="field-hint">Main folder on Google Drive — all files stored here</div>
+          </div>
+          <div class="sub-title" style="margin-top:4px;"><i class="ti ti-folder"></i> Auto-created Folders</div>
+          <div class="folders-grid">
+            <div class="folder-item"><i class="ti ti-folder"></i><div><div class="folder-name">Photos / NR Site</div><div class="folder-sub">Before & After</div></div></div>
+            <div class="folder-item"><i class="ti ti-folder"></i><div><div class="folder-name">Photos / FE Site</div><div class="folder-sub">Before & After</div></div></div>
+            <div class="folder-item"><i class="ti ti-folder"></i><div><div class="folder-name">Documents</div><div class="folder-sub">Excel / Word / PDF</div></div></div>
+            <div class="folder-item"><i class="ti ti-folder"></i><div><div class="folder-name">Exports</div><div class="folder-sub">Excel exports</div></div></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-test"   onclick="testDrive(this)"><i class="ti ti-plug"></i> Test Connection</button>
+            <button class="btn btn-google" onclick="saveDrive(this)"><i class="ti ti-device-floppy"></i> Save Drive Settings</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // AUTH
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxtB7ezMX6zzbWaPadp71ohAPYgPHH8O1VZTx34SPinkfOLjSWZ_iNLI9mO2EUC4Qn6/exec';
+  const user = JSON.parse(sessionStorage.getItem('nt_user') || 'null');
+  if (!user) window.location.href = 'index.html';
+  if (user) {
+    const initials = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sidebarAvatar').textContent = initials;
+    document.getElementById('sidebarName').textContent   = user.name;
+    document.getElementById('sidebarRole').textContent   = user.role.replace('_',' ');
+  }
+
+  // ═══ TELEGRAM ═══
+  let GROUPS = [
+    { name:'NJV Group',  id:'-1001234567890', partner:'NJV'  },
+    { name:'CTC Group',  id:'-1009876543210', partner:'CTC'  },
+    { name:'AWTG Group', id:'-1005555555555', partner:'AWTG' },
+  ];
+
+  const PARTNERS = [
+    { name:'NJV',       color:'#2563eb' },
+    { name:'AMC',       color:'#059669' },
+    { name:'MEL',       color:'#d97706' },
+    { name:'AWTG',      color:'#7c3aed' },
+    { name:'Nu-Era',    color:'#0891b2' },
+    { name:'Al-habdan', color:'#dc2626' },
+    { name:'CTC',       color:'#059669' },
+  ];
+
+  const partnerMembers = {};
+  PARTNERS.forEach(p => { partnerMembers[p.name] = []; });
+
+  // Render groups
+  function renderGroups() {
+    document.getElementById('groupsList').innerHTML = GROUPS.length === 0
+      ? '<p style="font-size:12px;color:var(--text-ter);padding:8px 0;">No groups added yet</p>'
+      : GROUPS.map((g,i) => `
+        <div class="group-row">
+          <div class="group-info">
+            <div class="group-name">${g.name}</div>
+            <div class="group-id">${g.id}</div>
+            <div class="group-partner">${g.partner}</div>
+          </div>
+          <div class="group-actions">
+            <div class="ico-btn del" onclick="deleteGroup(${i})"><i class="ti ti-trash"></i></div>
+          </div>
+        </div>`).join('');
+  }
+
+  function addGroup() {
+    const name    = document.getElementById('gName').value.trim();
+    const id      = document.getElementById('gId').value.trim();
+    const partner = document.getElementById('gPartner').value;
+    if (!name || !id || !partner) { showToast('Fill all group fields', 'error'); return; }
+    GROUPS.push({ name, id, partner });
+    document.getElementById('gName').value = '';
+    document.getElementById('gId').value   = '';
+    document.getElementById('gPartner').value = '';
+    renderGroups();
+    showToast('Group added!', 'success');
+  }
+
+  function deleteGroup(i) {
+    GROUPS.splice(i, 1);
+    renderGroups();
+    showToast('Group removed', 'success');
+  }
+
+  function saveGroups(btn) {
+    btn.innerHTML = '<i class="ti ti-check"></i> Saved!';
+    setTimeout(() => { btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Groups'; }, 2000);
+    showToast('Groups saved to Google Sheets!', 'success');
+    // Save to Google Sheets via API
+  }
+
+  // Render partner member blocks
+  function renderPartnerBlocks() {
+    document.getElementById('partnerBlocks').innerHTML = PARTNERS.map(p => `
+      <div class="partner-block">
+        <div class="partner-header">
+          <div class="partner-left">
+            <div class="partner-dot" style="background:${p.color};"></div>
+            <span class="partner-name-txt">${p.name}</span>
+            <span class="partner-count-txt">(${partnerMembers[p.name].length} members)</span>
+          </div>
+        </div>
+        <div class="partner-body">
+          <div class="add-member-row">
+            <input class="member-input" id="mi-${p.name}" placeholder="Telegram username — e.g. ahmed_njv" />
+            <select class="role-select" id="mr-${p.name}">
+              <option>Member</option>
+              <option>Admin</option>
+            </select>
+            <button class="add-member-btn" onclick="addMember('${p.name}')"><i class="ti ti-plus"></i> Add</button>
+          </div>
+          <div class="members-list" id="ml-${p.name}">
+            ${renderMembers(p.name)}
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderMembers(pName) {
+    const members = partnerMembers[pName];
+    if (members.length === 0) return '<div class="no-members">No members yet — add username above</div>';
+    return members.map((m,i) => `
+      <div class="member-row">
+        <div class="member-avatar">${m.username.slice(0,2).toUpperCase()}</div>
+        <div class="member-username">@${m.username}</div>
+        <span class="member-role-badge ${m.role==='Admin'?'role-admin':'role-member'}">${m.role}</span>
+        <div class="del-btn" onclick="removeMember('${pName}',${i})"><i class="ti ti-x"></i></div>
+      </div>`).join('');
+  }
+
+  function addMember(pName) {
+    const inp  = document.getElementById(`mi-${pName}`);
+    const role = document.getElementById(`mr-${pName}`);
+    const val  = inp.value.replace('@','').trim();
+    if (!val) return;
+    partnerMembers[pName].push({ username: val, role: role.value });
+    inp.value = '';
+    document.getElementById(`ml-${pName}`).innerHTML = renderMembers(pName);
+    document.querySelector(`.partner-block:has(#mi-${pName}) .partner-count-txt`).textContent = `(${partnerMembers[pName].length} members)`;
+    showToast(`@${val} added to ${pName}`, 'success');
+    // Save to Google Sheets via API
+  }
+
+  function removeMember(pName, i) {
+    partnerMembers[pName].splice(i, 1);
+    document.getElementById(`ml-${pName}`).innerHTML = renderMembers(pName);
+    // Update Google Sheets via API
+  }
+
+  // Webhook
+  function copyWebhook() {
+    navigator.clipboard.writeText(document.getElementById('webhookUrl').value);
+    const ic = document.getElementById('copyIcon');
+    ic.className = 'ti ti-check';
+    ic.style.color = 'var(--green)';
+    setTimeout(() => { ic.className = 'ti ti-copy'; ic.style.color = ''; }, 2000);
+  }
+
+  function toggleWebhookEdit() {
+    const inp = document.getElementById('webhookUrl');
+    inp.readOnly = !inp.readOnly;
+    inp.classList.toggle('readonly', inp.readOnly);
+    if (!inp.readOnly) inp.focus();
+  }
+
+  function testWebhook(btn) {
+    btn.innerHTML = '<i class="ti ti-loader"></i> Testing...';
+    setTimeout(() => {
+      btn.innerHTML = '<i class="ti ti-check" style="color:var(--green);"></i> Connected!';
+      setTimeout(() => { btn.innerHTML = '<i class="ti ti-plug"></i> Test Connection'; }, 2500);
+    }, 1800);
+  }
+
+  function saveWebhook(btn) {
+    btn.innerHTML = '<i class="ti ti-check"></i> Saved!';
+    setTimeout(() => { btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Webhook'; }, 2000);
+    showToast('Webhook URL saved!', 'success');
+  }
+
+  // ═══ GOOGLE ═══
+  function copyField(id) {
+    const val = document.getElementById(id).value;
+    if (!val) return;
+    navigator.clipboard.writeText(val);
+    showToast('Copied!', 'success');
+  }
+
+  function syncNow(btn) {
+    btn.innerHTML = '<i class="ti ti-loader"></i> Syncing...';
+    setTimeout(() => {
+      btn.innerHTML = '<i class="ti ti-check"></i> Synced!';
+      setTimeout(() => { btn.innerHTML = '<i class="ti ti-refresh"></i> Sync Now'; }, 2000);
+    }, 1800);
+    showToast('Data synced from Google Sheets!', 'success');
+  }
+
+  function testSheets(btn) {
+    btn.innerHTML = '<i class="ti ti-loader"></i> Testing...';
+    setTimeout(() => {
+      btn.innerHTML = '<i class="ti ti-check" style="color:var(--green);"></i> Connected!';
+      setTimeout(() => { btn.innerHTML = '<i class="ti ti-plug"></i> Test Connection'; }, 2500);
+    }, 1800);
+  }
+
+  function saveSheets(btn) {
+    const sheetId = document.getElementById('sheetId').value.trim();
+    const email   = document.getElementById('saEmail').value.trim();
+    const key     = document.getElementById('saKey').value.trim();
+    if (!sheetId || !email || !key) { showToast('Fill all Google Sheets fields', 'error'); return; }
+    btn.innerHTML = '<i class="ti ti-check"></i> Saved!';
+    setTimeout(() => { btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Sheets Settings'; }, 2000);
+    showToast('Google Sheets settings saved!', 'success');
+    // Save config
+  }
+
+  function testDrive(btn) {
+    btn.innerHTML = '<i class="ti ti-loader"></i> Testing...';
+    setTimeout(() => {
+      btn.innerHTML = '<i class="ti ti-check" style="color:var(--green);"></i> Connected!';
+      setTimeout(() => { btn.innerHTML = '<i class="ti ti-plug"></i> Test Connection'; }, 2500);
+    }, 1800);
+  }
+
+  function saveDrive(btn) {
+    const driveId = document.getElementById('driveId').value.trim();
+    if (!driveId) { showToast('Fill Drive Folder ID', 'error'); return; }
+    btn.innerHTML = '<i class="ti ti-check"></i> Saved!';
+    setTimeout(() => { btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Drive Settings'; }, 2000);
+    showToast('Google Drive settings saved!', 'success');
+  }
+
+  // ═══ TOAST ═══
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (type ? ' ' + type : '');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function openSidebar()  { document.getElementById('sidebar').classList.add('open');  document.getElementById('overlay').classList.add('show'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+  function logout() { sessionStorage.removeItem('nt_user'); window.location.href = 'index.html'; }
+
+  // INIT
+  renderGroups();
+  renderPartnerBlocks();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Nokia Tracker — Settings</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
   <style>
@@ -16,6 +16,10 @@
       --red: #dc2626; --green: #059669; --amber: #d97706;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    
+    /* Prevent mobile zoom on inputs */
+    input, select, textarea, button { font-size: 16px !important; font-family: inherit; }
+    
     .layout { display: flex; min-height: 100vh; }
 
     /* SIDEBAR */
@@ -50,52 +54,53 @@
 
     /* SECTION CARD */
     .section-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .section-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .section-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     .section-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .section-count { font-size: 12px; color: var(--text-ter); font-weight: 400; }
     .section-body { padding: 14px 16px; }
     .section-note { font-size: 12px; color: var(--text-ter); margin-top: 10px; display: flex; align-items: center; gap: 5px; }
 
     /* BUTTONS */
-    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: inherit; transition: background 0.1s; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: background 0.1s; min-height: 38px; }
     .btn:hover { background: #f9fafb; }
     .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
     .btn-primary:hover { background: #1d4ed8; }
-    .btn-sm { padding: 5px 12px; font-size: 12px; }
-    .ico-btn { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: background 0.1s; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; min-height: 34px; }
+    .ico-btn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: background 0.1s; }
     .ico-btn:hover { background: #f9fafb; }
     .ico-btn.edit { color: var(--amber); border-color: #fcd34d; background: #fffbeb; }
     .ico-btn.del  { color: var(--red);   border-color: #fca5a5; background: #fff5f5; }
     .ico-btn.show { color: var(--blue);  border-color: #93c5fd; background: var(--blue-light); }
 
     /* PARTNERS GRID */
-    .partners-grid { display: flex; gap: 10px; flex-wrap: wrap; }
-    .partner-card { background: #f9fafb; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; min-width: 130px; }
+    .partners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .partner-card { background: #f9fafb; border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; }
     .partner-card.hidden-p { opacity: 0.5; }
     .p-avatar { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
     .p-info { flex: 1; min-width: 0; }
-    .p-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .p-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .p-links { font-size: 11px; color: var(--text-ter); }
     .p-hidden { font-size: 11px; color: var(--red); }
-    .p-actions { display: flex; gap: 4px; }
+    .p-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
     /* REGIONS */
     .regions-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .region-tag { display: flex; align-items: center; gap: 6px; background: #f9fafb; border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 13px; color: var(--text); }
+    .region-tag { display: flex; align-items: center; gap: 6px; background: #f9fafb; border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; font-size: 13px; color: var(--text); }
+    .region-tag.inactive-tag { opacity: 0.5; text-decoration: line-through; }
     .tag-btn { cursor: pointer; font-size: 12px; display: flex; align-items: center; color: var(--text-ter); transition: color 0.1s; }
     .tag-btn:hover { color: var(--red); }
     .tag-btn.edit-tag:hover { color: var(--amber); }
 
     /* SCOPES */
     .scopes-list { display: flex; flex-direction: column; gap: 6px; }
-    .scope-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border); }
+    .scope-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
     .scope-name { font-size: 13px; font-weight: 500; color: var(--text); }
     .scope-links { font-size: 12px; color: var(--text-ter); }
     .scope-actions { display: flex; gap: 4px; }
 
     /* ADD ROW */
     .add-row { display: flex; gap: 8px; margin-top: 10px; }
-    .add-input { flex: 1; height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-size: 13px; color: var(--text); background: var(--white); outline: none; font-family: inherit; }
+    .add-input { flex: 1; height: 38px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; color: var(--text); background: var(--white); outline: none; }
     .add-input:focus { border-color: var(--blue); }
 
     /* MODAL */
@@ -108,14 +113,14 @@
     .modal-body { padding: 16px 18px; }
     .modal-footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
     .field label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 5px; font-weight: 500; }
-    .field input { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-size: 13px; color: var(--text); background: var(--white); outline: none; font-family: inherit; }
+    .field input { width: 100%; height: 40px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; color: var(--text); background: var(--white); outline: none; }
     .field input:focus { border-color: var(--blue); }
     .color-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color 0.1s; }
     .color-dot.selected { border-color: var(--text); }
 
     /* TOAST */
-    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; display: none; align-items: center; gap: 8px; z-index: 999; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff; padding: 12px 18px; border-radius: 8px; font-size: 13px; display: none; align-items: center; gap: 8px; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .toast.show { display: flex; }
     .toast.success { background: var(--green); }
     .toast.error   { background: var(--red); }
@@ -128,8 +133,11 @@
       .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
       .main { margin-left: 0; }
-      .partners-grid { flex-direction: column; }
       .menu-btn { display: flex; }
+      .partners-grid { grid-template-columns: 1fr; }
+      .section-header { flex-direction: column; align-items: flex-start; }
+      .topbar { padding: 10px 16px; }
+      .content { padding: 12px 16px; }
     }
   </style>
 </head>
@@ -293,38 +301,39 @@
   // ── FETCH ALL FROM API ──
   async function fetchAll() {
     try {
+      const cacheBuster = new Date().getTime(); // Fix Google Cache Issue
       const [pRes, rRes, sRes] = await Promise.all([
-        fetch(API_URL + '?action=getPartners', {method:'GET', redirect:'follow'}),
-        fetch(API_URL + '?action=getRegions',  {method:'GET', redirect:'follow'}),
-        fetch(API_URL + '?action=getScopes',   {method:'GET', redirect:'follow'}),
+        fetch(`${API_URL}?action=getPartners&_=${cacheBuster}`, {method:'GET', redirect:'follow'}),
+        fetch(`${API_URL}?action=getRegions&_=${cacheBuster}`,  {method:'GET', redirect:'follow'}),
+        fetch(`${API_URL}?action=getScopes&_=${cacheBuster}`,   {method:'GET', redirect:'follow'}),
       ]);
       const pd = await pRes.json();
       const rd = await rRes.json();
       const sd = await sRes.json();
 
+      // FIX: Store the ID directly to send it back correctly to the backend
       PARTNERS = Array.isArray(pd) ? pd.map((p,i) => ({
-        id:     p['ID']||i,
+        id:     p['ID']||'',
         name:   p['Partner Name']||'',
         color:  COLORS[i % COLORS.length],
         links:  0,
-        hidden: p['Status'] !== 'Active',
-        sheetId: p['ID']||''
+        hidden: p['Status'] !== 'Active'
       })) : [];
 
       REGIONS = Array.isArray(rd) ? rd.map(r => ({
+        id:     r['ID']||'',
         name:   r['Region Name']||'',
-        status: r['Status']||'Active',
-        sheetId: r['ID']||''
+        status: r['Status']||'Active'
       })) : [];
 
       SCOPES = Array.isArray(sd) ? sd.map(s => ({
+        id:     s['ID']||'',
         name:   s['Scope Name']||'',
         links:  0,
-        status: s['Status']||'Active',
-        sheetId: s['ID']||''
+        status: s['Status']||'Active'
       })) : [];
 
-    } catch(err) { PARTNERS=[]; REGIONS=[]; SCOPES=[]; }
+    } catch(err) { console.error(err); PARTNERS=[]; REGIONS=[]; SCOPES=[]; }
     renderPartners();
     renderRegions();
     renderScopes();
@@ -342,10 +351,10 @@
           ${p.hidden ? '<div class="p-hidden">Hidden</div>' : ''}
         </div>
         <div class="p-actions">
-          <div class="ico-btn edit" onclick="openEditPartner(${p.id})"><i class="ti ti-edit"></i></div>
+          <div class="ico-btn edit" onclick="openEditPartner('${p.id}')"><i class="ti ti-edit"></i></div>
           ${p.hidden
-            ? `<div class="ico-btn show" onclick="togglePartner(${p.id})"><i class="ti ti-eye"></i></div>`
-            : `<div class="ico-btn del"  onclick="togglePartner(${p.id})"><i class="ti ti-eye-off"></i></div>`
+            ? `<div class="ico-btn show" onclick="togglePartner('${p.id}')"><i class="ti ti-eye"></i></div>`
+            : `<div class="ico-btn del"  onclick="togglePartner('${p.id}')"><i class="ti ti-eye-off"></i></div>`
           }
         </div>
       </div>`).join('');
@@ -355,10 +364,12 @@
   function renderRegions() {
     document.getElementById('regionsCount').textContent = `${REGIONS.length} regions`;
     document.getElementById('regionsRow').innerHTML = REGIONS.map((r,i) => `
-      <div class="region-tag">
+      <div class="region-tag ${r.status !== 'Active' ? 'inactive-tag' : ''}">
         ${r.name}
-        <span class="tag-btn edit-tag" onclick="openEditItem('region',${i},'${r.name}')"><i class="ti ti-edit"></i></span>
-        <span class="tag-btn" onclick="deleteRegion(${i})"><i class="ti ti-x"></i></span>
+        <span class="tag-btn edit-tag" onclick="openEditItem('region','${r.id}','${r.name}')"><i class="ti ti-edit"></i></span>
+        <span class="tag-btn" onclick="toggleRegion('${r.id}', '${r.status}')">
+          <i class="ti ti-${r.status === 'Active' ? 'x' : 'eye'}"></i>
+        </span>
       </div>`).join('');
   }
 
@@ -366,16 +377,16 @@
   function renderScopes() {
     document.getElementById('scopesCount').textContent = `${SCOPES.length} scopes`;
     document.getElementById('scopesList').innerHTML = SCOPES.map((s,i) => `
-      <div class="scope-row">
+      <div class="scope-row" style="${s.status !== 'Active' ? 'opacity:0.5;' : ''}">
         <div>
-          <div class="scope-name">${s.name}</div>
+          <div class="scope-name">${s.name} ${s.status !== 'Active' ? '<span style="color:red;font-size:11px;">(Hidden)</span>' : ''}</div>
           <div class="scope-links">${s.links} links</div>
         </div>
         <div class="scope-actions">
-          <div class="ico-btn edit" onclick="openEditItem('scope',${i},'${s.name}')"><i class="ti ti-edit"></i></div>
-          ${s.links > 0
-            ? `<div class="ico-btn del" title="Hide scope" onclick="showToast('Scope has links — hide it instead','error')"><i class="ti ti-eye-off"></i></div>`
-            : `<div class="ico-btn del" onclick="deleteScope(${i})"><i class="ti ti-trash"></i></div>`
+          <div class="ico-btn edit" onclick="openEditItem('scope','${s.id}','${s.name}')"><i class="ti ti-edit"></i></div>
+          ${s.status === 'Active'
+            ? `<div class="ico-btn del" title="Hide scope" onclick="toggleScope('${s.id}', 'Active')"><i class="ti ti-eye-off"></i></div>`
+            : `<div class="ico-btn show" title="Show scope" onclick="toggleScope('${s.id}', 'Inactive')"><i class="ti ti-eye"></i></div>`
           }
         </div>
       </div>`).join('');
@@ -414,26 +425,27 @@
   function savePartner() {
     const name = document.getElementById('pName').value.trim();
     if (!name) { showToast('Partner name is required', 'error'); return; }
+    
     if (editingPartner) {
+      // Update existing partner name (Requires Backend support, currently updates locally and status only in sheet)
       const idx = PARTNERS.findIndex(p => p.id === editingPartner);
       PARTNERS[idx].name  = name;
       PARTNERS[idx].color = selectedColor;
-      showToast('Partner updated!', 'success');
+      showToast('Updating...', '');
+      fetch(API_URL + '?action=updatePartner&id=' + encodeURIComponent(editingPartner) + '&partnerName=' + encodeURIComponent(name) + '&status=' + PARTNERS[idx].status, {method:'GET', redirect:'follow'})
+        .then(() => { fetchAll(); showToast('Partner updated!', 'success'); });
     } else {
-      const newId = Math.max(...PARTNERS.map(p=>p.id)) + 1;
-      PARTNERS.push({ id:newId, name, color:selectedColor, links:0, hidden:false });
-      showToast('Partner added!', 'success');
+      showToast('Adding...', '');
+      fetch(API_URL + '?action=addPartner&partnerName=' + encodeURIComponent(name) + '&status=Active', {method:'GET', redirect:'follow'})
+        .then(() => { fetchAll(); showToast('Partner added!', 'success'); });
     }
     closePartnerModal();
-    showToast('Saving...', '');
-    fetch(API_URL + '?action=addPartner&partnerName=' + encodeURIComponent(name) + '&status=Active', {method:'GET', redirect:'follow'})
-      .then(() => fetchAll());
   }
 
   function togglePartner(id) {
     const p = PARTNERS.find(x => x.id === id);
-    const newStatus = p.hidden ? 'Active' : 'Hidden';
-    fetch(API_URL + '?action=updatePartner&id=' + encodeURIComponent(p.id) + '&status=' + newStatus, {method:'GET', redirect:'follow'})
+    const newStatus = p.hidden ? 'Active' : 'Inactive'; // FIX: Use Inactive instead of Hidden
+    fetch(API_URL + '?action=updatePartner&id=' + encodeURIComponent(id) + '&status=' + newStatus + '&partnerName=' + encodeURIComponent(p.name), {method:'GET', redirect:'follow'})
       .then(() => { fetchAll(); showToast(p.hidden ? 'Partner visible' : 'Partner hidden', 'success'); });
   }
 
@@ -441,41 +453,42 @@
   function addRegion() {
     const val = document.getElementById('newRegion').value.trim();
     if (!val) return;
-    if (REGIONS.includes(val)) { showToast('Region already exists', 'error'); return; }
-    REGIONS.push(val);
+    if (REGIONS.some(r => r.name.toLowerCase() === val.toLowerCase())) { showToast('Region already exists', 'error'); return; }
     document.getElementById('newRegion').value = '';
     showToast('Adding...', '');
     fetch(API_URL + '?action=addRegion&regionName=' + encodeURIComponent(val) + '&status=Active', {method:'GET', redirect:'follow'})
       .then(() => { fetchAll(); showToast('Region added!', 'success'); });
   }
 
-  function deleteRegion(i) {
-    const r = REGIONS[i];
-    fetch(API_URL + '?action=updateRegion&id=' + encodeURIComponent(r.id) + '&status=Hidden', {method:'GET', redirect:'follow'})
-      .then(() => { fetchAll(); showToast('Region hidden', 'success'); });
+  function toggleRegion(id, currentStatus) {
+    const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+    const r = REGIONS.find(x => x.id === id);
+    fetch(API_URL + '?action=updateRegion&id=' + encodeURIComponent(id) + '&status=' + newStatus + '&regionName=' + encodeURIComponent(r.name), {method:'GET', redirect:'follow'})
+      .then(() => { fetchAll(); showToast('Region updated!', 'success'); });
   }
 
   // ── SCOPES ──
   function addScope() {
     const val = document.getElementById('newScope').value.trim();
     if (!val) return;
-    SCOPES.push({ name:val, links:0 });
+    if (SCOPES.some(s => s.name.toLowerCase() === val.toLowerCase())) { showToast('Scope already exists', 'error'); return; }
     document.getElementById('newScope').value = '';
     showToast('Adding...', '');
     fetch(API_URL + '?action=addScope&scopeName=' + encodeURIComponent(val) + '&status=Active', {method:'GET', redirect:'follow'})
       .then(() => { fetchAll(); showToast('Scope added!', 'success'); });
   }
 
-  function deleteScope(i) {
-    const s = SCOPES[i];
-    fetch(API_URL + '?action=updateScope&id=' + encodeURIComponent(s.id) + '&status=Hidden', {method:'GET', redirect:'follow'})
-      .then(() => { fetchAll(); showToast('Scope hidden', 'success'); });
+  function toggleScope(id, currentStatus) {
+    const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+    const s = SCOPES.find(x => x.id === id);
+    fetch(API_URL + '?action=updateScope&id=' + encodeURIComponent(id) + '&status=' + newStatus + '&scopeName=' + encodeURIComponent(s.name), {method:'GET', redirect:'follow'})
+      .then(() => { fetchAll(); showToast('Scope updated!', 'success'); });
   }
 
   // ── ITEM MODAL (region/scope edit) ──
-  function openEditItem(type, idx, current) {
+  function openEditItem(type, id, current) {
     itemType = type;
-    editingItem = idx;
+    editingItem = id; // FIX: Store the sheet ID, not the index
     document.getElementById('itemModalTitle').textContent = `Edit ${type === 'region' ? 'Region' : 'Scope'}`;
     document.getElementById('itemModalLabel').textContent = `${type === 'region' ? 'Region' : 'Scope'} Name *`;
     document.getElementById('itemName').value = current;
@@ -487,18 +500,19 @@
   function saveItem() {
     const val = document.getElementById('itemName').value.trim();
     if (!val) { showToast('Name is required', 'error'); return; }
-    if (itemType === 'region') {
-      REGIONS[editingItem] = val;
-      renderRegions();
-    } else {
-      SCOPES[editingItem].name = val;
-      renderScopes();
-    }
-    closeItemModal();
-    showToast('Updated successfully!', 'success');
+    
+    let action = itemType === 'region' ? 'updateRegion' : 'updateScope';
+    let nameParam = itemType === 'region' ? 'regionName' : 'scopeName';
+    
+    fetch(API_URL + '?action=' + action + '&id=' + encodeURIComponent(editingItem) + '&status=Active&' + nameParam + '=' + encodeURIComponent(val), {method:'GET', redirect:'follow'})
+      .then(() => {
+        fetchAll();
+        closeItemModal();
+        showToast('Updated successfully!', 'success');
+      });
   }
 
-  // ── TOAST ──
+  // ── TOAST & UI HELPERS ──
   function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -510,7 +524,6 @@
   function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
   function logout() { sessionStorage.removeItem('nt_user'); window.location.href = 'index.html'; }
 
-  // Allow Enter key on inputs
   document.getElementById('newRegion').addEventListener('keydown', e => { if (e.key==='Enter') addRegion(); });
   document.getElementById('newScope').addEventListener('keydown',  e => { if (e.key==='Enter') addScope(); });
 
